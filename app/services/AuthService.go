@@ -9,7 +9,7 @@ import (
 func CreateUserAcc(req models.CreateUserReq) models.CreateUserResp {
 	var resp models.CreateUserResp
 	//check if user exists
-	userExists, err := db.UserExists(req.UserName, req.Email)
+	userExists, err := db.UserExistsByUsernameEmail(req.UserName, req.Email)
 	if err != nil {
 		resp.Status = "ERROR"
 		resp.Message = "DB Error"
@@ -36,5 +36,34 @@ func CreateUserAcc(req models.CreateUserReq) models.CreateUserResp {
 	}
 	resp.Status = "SUCCESS"
 	resp.Message = "User Created Successfully"
+	return resp
+}
+
+func AuthenticateUser(req models.AuthenticateUserReq) models.AuthenticateUserResp {
+	var resp models.AuthenticateUserResp
+	//check if user exists
+	userExists, err := db.UserExistsByUsername(req.UserName)
+	if err != nil {
+		resp.Status = "ERROR"
+		resp.Message = "DB Error"
+		return resp
+	} else if !userExists {
+		resp.Status = "ERROR"
+		resp.Message = "User Does Not Exists"
+		return resp
+	}
+	//if user exists now validate tis credentials are right
+	isValidated, err := db.ValidateUser(req.UserName, req.Password)
+	if err != nil {
+		resp.Status = "ERROR"
+		resp.Message = "DB Validate Error"
+		return resp
+	} else if isValidated {
+		resp.Status = "SUCCESS"
+		resp.Message = "User Validated Successfully"
+		return resp
+	}
+	resp.Status = "SUCCESS"
+	resp.Message = "False credentials"
 	return resp
 }

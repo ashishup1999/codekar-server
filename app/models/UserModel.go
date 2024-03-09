@@ -20,3 +20,13 @@ type CreateUserResp struct {
 	Status  string `json:"status"`
 	Message string `json:"message"`
 }
+
+type AuthenticateUserReq struct {
+	UserName string `json:"userName"`
+	Password string `json:"password"`
+}
+
+type AuthenticateUserResp struct {
+	Status  string `json:"status"`
+	Message string `json:"message"`
+}
