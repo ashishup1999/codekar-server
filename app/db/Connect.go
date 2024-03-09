@@ -2,16 +2,20 @@ package db
 
 import (
 	"context"
+	"fmt"
 
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
-func ConnectToMongoDB(uri string) (*mongo.Client, error) {
+var dbClient *mongo.Client
+var dbName string = "codekar"
+
+func ConnectToMongoDB(uri string) {
 	clientOptions := options.Client().ApplyURI(uri)
 	client, err := mongo.Connect(context.Background(), clientOptions)
 	if err != nil {
-		return nil, err
+		fmt.Println(err.Error())
 	}
-	return client, nil
+	dbClient = client
 }
