@@ -11,7 +11,7 @@ import (
 func CreateUserHandler(c *gin.Context) {
 	var req models.CreateUserReq
 	if err := c.BindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		c.JSON(http.StatusBadRequest, gin.H{"status": "ERROR", "message": err.Error()})
 		return
 	}
 	c.JSON(http.StatusAccepted, services.CreateUserAcc(req))
@@ -20,7 +20,7 @@ func CreateUserHandler(c *gin.Context) {
 func AuthenticateUserHandler(c *gin.Context) {
 	var req models.AuthenticateUserReq
 	if err := c.BindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		c.JSON(http.StatusBadRequest, gin.H{"status": "ERROR", "message": err.Error()})
 		return
 	}
 	c.JSON(http.StatusAccepted, services.AuthenticateUser(req))
