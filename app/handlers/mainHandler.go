@@ -14,4 +14,6 @@ func SetUphandler(r *gin.Engine) {
 	r.POST("/compile", CompileCode)
 	r.POST("/createUserAccount", CreateUserHandler)
 	r.POST("/authenticateUser", AuthenticateUserHandler)
+	r.GET("/getAllProjectsByUser/:userName", GetAllUserProjshandler)
+	r.POST("/createNewProjectByUser", CreateNewProject)
 }
