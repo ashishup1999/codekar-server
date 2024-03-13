@@ -37,7 +37,7 @@ type AllProjectsResp struct {
 type SingleProjectsResp struct {
 	Status      string      `json:"status"`
 	Message     string      `json:"message"`
-	ProjectData ProjectData `json:"projects"`
+	ProjectData ProjectData `json:"projectData"`
 }
 
 type CreateProjReq struct {
