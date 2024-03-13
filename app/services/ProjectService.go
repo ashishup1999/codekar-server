@@ -15,11 +15,9 @@ func GetAllProjectsByUser(userName string) models.AllProjectsResp {
 	}
 	for _, proj := range projects {
 		var projMeta models.ProjectMeta
-		projMeta.ProjectId = proj.Id.String()
+		projMeta.ProjectId = proj.Id
 		projMeta.ProjectName = proj.ProjectName
 		projMeta.UserName = proj.UserName
-		projMeta.Likes = proj.Likes
-		projMeta.Comments = proj.Comments
 		resp.Projects = append(resp.Projects, projMeta)
 	}
 	resp.Status = "SUCCESS"
@@ -39,4 +37,43 @@ func CreateNewProjectByUsername(req models.CreateProjReq) models.CreateProjResp 
 	resp.Message = "PROJECT_CREATED_SUCCESSFULY"
 	resp.ProjectId = id
 	return resp
+}
+
+func GetProjectDataById(projectId string) models.SingleProjectsResp {
+	projectInfo, err := db.GetProjectById(projectId)
+	if err != nil {
+		resp := models.SingleProjectsResp{
+			Status:  "ERROR",
+			Message: "DB_ERROR",
+		}
+		return resp
+	}
+	resp := models.SingleProjectsResp{
+		Status:  "SUCCESS",
+		Message: "ALL_USER_PROJECTS_FETCHED",
+		ProjectData: models.ProjectData{
+			ProjectId:   projectInfo.Id,
+			ProjectName: projectInfo.ProjectName,
+			UserName:    projectInfo.UserName,
+			Html:        projectInfo.Html,
+			Css:         projectInfo.Css,
+			Javascript:  projectInfo.Javascript,
+		},
+	}
+	return resp
+}
+
+func UpdateProjectService(projReq models.UpdateProjReq) models.UpdateProjResp {
+	err := db.UpdateProject(projReq)
+	if err != nil {
+		resp := models.UpdateProjResp{
+			Status:  "ERROR",
+			Message: "DB_ERROR",
+		}
+		return resp
+	}
+	return models.UpdateProjResp{
+		Status:  "SUCCESS",
+		Message: "PROJECT_UPDATED_SUCCESSFULY",
+	}
 }

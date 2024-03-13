@@ -3,9 +3,11 @@ package db
 import (
 	"codekar/app/models"
 	"context"
+	"fmt"
+	"time"
 
+	"github.com/google/uuid"
 	"go.mongodb.org/mongo-driver/bson"
-	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
 func GetAllProjects(userName string) ([]models.Project, error) {
@@ -32,9 +34,15 @@ func GetAllProjects(userName string) ([]models.Project, error) {
 }
 
 func CreateNewProj(req models.CreateProjReq) (string, error) {
-	var newProj models.Project
-	newProj.UserName = req.UserName
-	newProj.ProjectName = req.ProjectName
+	newProj := models.Project{
+		Id:          uuid.New().String(),
+		UserName:    req.UserName,
+		ProjectName: req.ProjectName,
+		CreatedAt:   time.Now().String(),
+		UpdatedAt:   time.Now().String(),
+		Likes:       []models.ProjLike{},
+		Comments:    []models.ProjCmnt{},
+	}
 	collection := dbClient.Database(dbName).Collection("projects")
 	bsonData, err := bson.Marshal(newProj)
 	if err != nil {
@@ -44,19 +52,29 @@ func CreateNewProj(req models.CreateProjReq) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	return result.InsertedID.(primitive.ObjectID).String(), nil
+	return result.InsertedID.(string), nil
 }
 
-func UpdateProject(proj models.Project) error {
+func GetProjectById(projId string) (models.Project, error) {
+	var project models.Project
 	collection := dbClient.Database(dbName).Collection("projects")
-	bsonData, err := bson.Marshal(proj)
+	filter := bson.M{"_id": projId}
+	bsonData := collection.FindOne(context.Background(), filter)
+	err := bsonData.Decode(&project)
 	if err != nil {
-		return err
+		return models.Project{}, err
 	}
-	filter := bson.M{"_id": proj.Id}
-	update := bson.M{"$set": bsonData}
-	_, err = collection.UpdateOne(context.Background(), filter, update)
+	return project, nil
+}
+
+func UpdateProject(proj models.UpdateProjReq) error {
+	proj.UpdatedAt = time.Now().String()
+	collection := dbClient.Database(dbName).Collection("projects")
+	filter := bson.M{"_id": proj.ProjectId}
+	update := bson.M{"$set": proj}
+	_, err := collection.UpdateOne(context.Background(), filter, update)
 	if err != nil {
+		fmt.Println(2, err.Error())
 		return err
 	}
 	return nil

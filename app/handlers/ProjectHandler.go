@@ -25,3 +25,21 @@ func CreateNewProject(c *gin.Context) {
 	}
 	c.JSON(http.StatusAccepted, services.CreateNewProjectByUsername(req))
 }
+
+func GetProjectById(c *gin.Context) {
+	projId := c.Param("projId")
+	if projId == "" {
+		c.JSON(http.StatusBadRequest, gin.H{"status": "ERROR"})
+		return
+	}
+	c.JSON(http.StatusAccepted, services.GetProjectDataById(projId))
+}
+
+func UpdateProjectHandler(c *gin.Context) {
+	var req models.UpdateProjReq
+	if err := c.BindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"status": "ERROR", "message": err.Error()})
+		return
+	}
+	c.JSON(http.StatusAccepted, services.UpdateProjectService(req))
+}

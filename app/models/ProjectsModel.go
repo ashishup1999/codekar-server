@@ -1,32 +1,43 @@
 package models
 
-import "go.mongodb.org/mongo-driver/bson/primitive"
-
 type Project struct {
-	Id         primitive.ObjectID `bson:"_id,omitempty"`
-	UserName    string             `bson:"username"`
-	ProjectName string             `bson:"projectname"`
-	Html        string             `bson:"html"`
-	Javascript  string             `bson:"javascript"`
-	Css         string             `bson:"css"`
-	Likes       string             `bson:"likes"`
-	Comments    string             `bson:"comments"`
-	CreatedAt   string             `bson:"createdat"`
-	UpdatedAt   string             `bson:"updatedat"`
+	Id          string `bson:"_id,omitempty"`
+	UserName    string `bson:"username"`
+	ProjectName string `bson:"projectname"`
+	Html        string `bson:"html"`
+	Javascript  string `bson:"javascript"`
+	Css         string `bson:"css"`
+	Likes       []ProjLike `bson:"likes"`
+	Comments    []ProjCmnt `bson:"comments"`
+	CreatedAt   string `bson:"createdat"`
+	UpdatedAt   string `bson:"updatedat"`
 }
 
 type ProjectMeta struct {
 	ProjectId   string `json:"projectId"`
 	UserName    string `json:"userName"`
 	ProjectName string `json:"projectName"`
-	Likes       string `json:"likes"`
-	Comments    string `json:"comments"`
+}
+
+type ProjectData struct {
+	ProjectId   string `json:"projectId"`
+	UserName    string `json:"userName"`
+	Html        string `json:"html"`
+	Javascript  string `json:"javascript"`
+	Css         string `json:"css"`
+	ProjectName string `json:"projectName"`
 }
 
 type AllProjectsResp struct {
 	Status   string        `json:"status"`
 	Message  string        `json:"message"`
 	Projects []ProjectMeta `json:"projects"`
+}
+
+type SingleProjectsResp struct {
+	Status      string      `json:"status"`
+	Message     string      `json:"message"`
+	ProjectData ProjectData `json:"projects"`
 }
 
 type CreateProjReq struct {
@@ -38,4 +49,29 @@ type CreateProjResp struct {
 	Status    string `json:"status"`
 	Message   string `json:"message"`
 	ProjectId string `json:"projectId"`
+}
+
+type UpdateProjReq struct {
+	ProjectId   string `json:"projectId" bson:"_id"`
+	Html        string `json:"html" bson:"html"`
+	Javascript  string `json:"javascript" bson:"javascript"`
+	Css         string `json:"css" bson:"css"`
+	ProjectName string `json:"projectName" bson:"projectname"`
+	UpdatedAt   string `json:"updatedAt" bson:"updatedat"`
+}
+
+type UpdateProjResp struct {
+	Status  string `json:"status"`
+	Message string `json:"message"`
+}
+
+type ProjLike struct {
+	By string `bson:"by"`
+	At string `bson:"at"`
+}
+
+type ProjCmnt struct {
+	By string `bson:"by"`
+	At string `bson:"at"`
+	Comment string `bson:"comment"`
 }
