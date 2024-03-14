@@ -2,6 +2,7 @@ package db
 
 import (
 	"codekar/app/models"
+	"codekar/app/utils"
 	"context"
 	"fmt"
 	"time"
@@ -88,4 +89,21 @@ func DeleteProject(Id string) error {
 		return err
 	}
 	return nil
+}
+
+func GetProjectThumbnailById(projId string) ([]byte, error) {
+	var project models.Project
+	collection := dbClient.Database(dbName).Collection("projects")
+	filter := bson.M{"_id": projId}
+	bsonData := collection.FindOne(context.Background(), filter)
+	err := bsonData.Decode(&project)
+	if err != nil {
+		return nil, err
+	}
+	imgBuff, err := utils.GetProjectThumbnail(project.Html, project.Css, project.Javascript)
+	if err != nil {
+		return nil, err
+	}
+
+	return imgBuff, nil
 }

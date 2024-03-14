@@ -3,6 +3,7 @@ package handlers
 import (
 	"codekar/app/models"
 	"codekar/app/services"
+	"encoding/base64"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -42,4 +43,19 @@ func UpdateProjectHandler(c *gin.Context) {
 		return
 	}
 	c.JSON(http.StatusAccepted, services.UpdateProjectService(req))
+}
+
+func GetProjectThumbnailHandler(c *gin.Context) {
+	projId := c.Param("projId")
+	if projId == "" {
+		c.JSON(http.StatusBadRequest, gin.H{"status": "ERROR"})
+		return
+	}
+	imgBuff, err := services.GetProjectThumbnailService(projId)
+	if err != nil {
+		c.JSON(http.StatusBadGateway, gin.H{"status": "ERROR", "message": err.Error()})
+		return
+	}
+	base64Encoded := base64.StdEncoding.EncodeToString(imgBuff)
+	c.JSON(http.StatusAccepted, gin.H{"status": "SUCCESS", "base64Img": base64Encoded})
 }

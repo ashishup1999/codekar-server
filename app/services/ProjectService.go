@@ -77,3 +77,8 @@ func UpdateProjectService(projReq models.UpdateProjReq) models.UpdateProjResp {
 		Message: "PROJECT_UPDATED_SUCCESSFULY",
 	}
 }
+
+func GetProjectThumbnailService(projectId string) ([]byte, error) {
+	imgBuff, err := db.GetProjectThumbnailById(projectId)
+	return imgBuff, err
+}
