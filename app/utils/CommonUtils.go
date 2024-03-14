@@ -7,7 +7,7 @@ import (
 	"github.com/chromedp/chromedp"
 )
 
-func getProjectPreview(html, css, javascript string) string {
+func GetProjectPreview(html, css, javascript string) string {
 	var previewString = fmt.Sprintf(`
 	<!DOCTYPE html>
 	<html lang="en">
@@ -16,16 +16,20 @@ func getProjectPreview(html, css, javascript string) string {
 	  <meta name="viewport" content="width=device-width, initial-scale=1.0">
 	  <title>Your Title Here</title>
 	  <style>
-		html {
-		  width: 100vw;
-		  height: 100vh;
+		*{
+			overflow: hidden;
 		}
-		body {
+		html {
 		  width: 100%%;
 		  height: 100%%;
-		  margin:0;
-		  padding:0;
-		  box-sizing: border-box;
+		}
+		body {
+			width: 100%%;
+			height: 100%%;
+			margin:0;
+			padding:0;
+			box-sizing: border-box;
+			pointer-events: none;
 		}
 		%s
 	  </style>
@@ -47,7 +51,7 @@ func GetProjectThumbnail(html, css, javascript string) ([]byte, error) {
 
 	//image buffer and htmlText
 	var imgBuff []byte
-	htmlText := getProjectPreview(html, css, javascript)
+	htmlText := GetProjectPreview(html, css, javascript)
 
 	//capturing screenshot
 	err := chromedp.Run(ctx, chromedp.Navigate("data:text/html,"+htmlText), chromedp.CaptureScreenshot(&imgBuff))

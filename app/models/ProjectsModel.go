@@ -17,6 +17,7 @@ type ProjectMeta struct {
 	ProjectId   string `json:"projectId"`
 	UserName    string `json:"userName"`
 	ProjectName string `json:"projectName"`
+	PreviewHtml string `json:"previewHtml"`
 }
 
 type ProjectData struct {

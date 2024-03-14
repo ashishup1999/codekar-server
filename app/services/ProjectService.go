@@ -3,6 +3,7 @@ package services
 import (
 	"codekar/app/db"
 	"codekar/app/models"
+	"codekar/app/utils"
 )
 
 func GetAllProjectsByUser(userName string) models.AllProjectsResp {
@@ -14,11 +15,13 @@ func GetAllProjectsByUser(userName string) models.AllProjectsResp {
 		return resp
 	}
 	for _, proj := range projects {
-		var projMeta models.ProjectMeta
-		projMeta.ProjectId = proj.Id
-		projMeta.ProjectName = proj.ProjectName
-		projMeta.UserName = proj.UserName
-		resp.Projects = append(resp.Projects, projMeta)
+		projData := models.ProjectMeta{
+			ProjectId:   proj.Id,
+			ProjectName: proj.ProjectName,
+			UserName:    proj.UserName,
+			PreviewHtml: utils.GetProjectPreview(proj.Html,proj.Css,proj.Javascript),
+		}
+		resp.Projects = append(resp.Projects, projData)
 	}
 	resp.Status = "SUCCESS"
 	resp.Message = "ALL_USER_PROJECTS_FETCHED"
