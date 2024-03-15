@@ -11,7 +11,7 @@ import (
 
 func GetAllProjects(userName string) ([]models.Project, error) {
 	var projects []models.Project
-	collection := dbClient.Database(dbName).Collection("playgrounds")
+	collection := dbClient.Database(dbName).Collection("projects")
 	filter := bson.M{"username": userName}
 	cursor, err := collection.Find(context.Background(), filter)
 	if err != nil {
