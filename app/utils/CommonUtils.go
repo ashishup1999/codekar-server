@@ -1,10 +1,7 @@
 package utils
 
 import (
-	"context"
 	"fmt"
-
-	"github.com/chromedp/chromedp"
 )
 
 func GetProjectPreview(html, css, javascript string) string {
@@ -42,23 +39,4 @@ func GetProjectPreview(html, css, javascript string) string {
 	</body>
 	</html>`, css, html, javascript)
 	return previewString
-}
-
-func GetProjectThumbnail(html, css, javascript string) ([]byte, error) {
-	//creating a new context
-	ctx, cancel := chromedp.NewContext(context.Background())
-	defer cancel()
-
-	//image buffer and htmlText
-	var imgBuff []byte
-	htmlText := GetProjectPreview(html, css, javascript)
-
-	//capturing screenshot
-	err := chromedp.Run(ctx, chromedp.Navigate("data:text/html,"+htmlText), chromedp.CaptureScreenshot(&imgBuff))
-	if err != nil {
-		return nil, err
-	}
-
-	return imgBuff, nil
-
 }

@@ -2,9 +2,7 @@ package db
 
 import (
 	"codekar/app/models"
-	"codekar/app/utils"
 	"context"
-	"fmt"
 	"time"
 
 	"github.com/google/uuid"
@@ -13,7 +11,7 @@ import (
 
 func GetAllProjects(userName string) ([]models.Project, error) {
 	var projects []models.Project
-	collection := dbClient.Database(dbName).Collection("projects")
+	collection := dbClient.Database(dbName).Collection("playgrounds")
 	filter := bson.M{"username": userName}
 	cursor, err := collection.Find(context.Background(), filter)
 	if err != nil {
@@ -41,8 +39,6 @@ func CreateNewProj(req models.CreateProjReq) (string, error) {
 		ProjectName: req.ProjectName,
 		CreatedAt:   time.Now().String(),
 		UpdatedAt:   time.Now().String(),
-		Likes:       []models.ProjLike{},
-		Comments:    []models.ProjCmnt{},
 	}
 	collection := dbClient.Database(dbName).Collection("projects")
 	bsonData, err := bson.Marshal(newProj)
@@ -75,7 +71,6 @@ func UpdateProject(proj models.UpdateProjReq) error {
 	update := bson.M{"$set": proj}
 	_, err := collection.UpdateOne(context.Background(), filter, update)
 	if err != nil {
-		fmt.Println(2, err.Error())
 		return err
 	}
 	return nil
@@ -89,21 +84,4 @@ func DeleteProject(Id string) error {
 		return err
 	}
 	return nil
-}
-
-func GetProjectThumbnailById(projId string) ([]byte, error) {
-	var project models.Project
-	collection := dbClient.Database(dbName).Collection("projects")
-	filter := bson.M{"_id": projId}
-	bsonData := collection.FindOne(context.Background(), filter)
-	err := bsonData.Decode(&project)
-	if err != nil {
-		return nil, err
-	}
-	imgBuff, err := utils.GetProjectThumbnail(project.Html, project.Css, project.Javascript)
-	if err != nil {
-		return nil, err
-	}
-
-	return imgBuff, nil
 }

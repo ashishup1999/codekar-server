@@ -6,9 +6,7 @@ type Project struct {
 	ProjectName string `bson:"projectname"`
 	Html        string `bson:"html"`
 	Javascript  string `bson:"javascript"`
-	Css         string `bson:"css"`
-	Likes       []ProjLike `bson:"likes"`
-	Comments    []ProjCmnt `bson:"comments"`
+	Css         string `bson:"css"`  
 	CreatedAt   string `bson:"createdat"`
 	UpdatedAt   string `bson:"updatedat"`
 }
@@ -64,15 +62,4 @@ type UpdateProjReq struct {
 type UpdateProjResp struct {
 	Status  string `json:"status"`
 	Message string `json:"message"`
-}
-
-type ProjLike struct {
-	By string `bson:"by"`
-	At string `bson:"at"`
-}
-
-type ProjCmnt struct {
-	By string `bson:"by"`
-	At string `bson:"at"`
-	Comment string `bson:"comment"`
 }
