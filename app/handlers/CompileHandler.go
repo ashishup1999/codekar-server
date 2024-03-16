@@ -22,20 +22,25 @@ func CompileCode(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
-	var resp models.CompileResp
+	var output string
+	var err error
 	if req.Language == JAVA {
-		resp = services.RunJavafn(req)
+		output, err = services.RunJavafn(req)
 	} else if req.Language == PYTHON {
-		resp = services.RunPythonfn(req)
+		output, err = services.RunPythonfn(req)
 	} else if req.Language == CPP {
-		resp = services.RunCppfn(req)
+		output, err = services.RunCppfn(req)
 	} else if req.Language == GO {
-		resp = services.RunGofn(req)
+		output, err = services.RunGofn(req)
 	} else if req.Language == JS {
-		resp = services.RunJSfn(req)
+		output, err = services.RunJSfn(req)
 	} else {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Language not supported"})
 		return
 	}
-	c.JSON(http.StatusAccepted, resp)
+	if err != nil {
+		c.JSON(500, models.CompileResp{Status: "ERROR", Message: "Execution Failed", Output: err.Error()})
+		return
+	}
+	c.JSON(http.StatusAccepted, models.CompileResp{Status: "SUCCESS", Message: "Compiled Successfuly", Output: output})
 }

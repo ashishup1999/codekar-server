@@ -12,17 +12,13 @@ import (
 	"strings"
 )
 
-func RunJavafn(req models.CompileReq) models.CompileResp {
-	var errorResponse = models.CompileResp{
-		Status: "ERROR",
-	}
+func RunJavafn(req models.CompileReq) (string, error) {
 
 	//create a java file
-	tempFile := req.FileName
+	tempFile := "Main.java"
 	file, err := os.Create(tempFile)
 	if err != nil {
-		errorResponse.Message = "File Creation Failed"
-		return errorResponse
+		return "", nil
 	}
 
 	//write java file
@@ -31,13 +27,13 @@ func RunJavafn(req models.CompileReq) models.CompileResp {
 	//create input and output buffer
 	var inpBuff bytes.Buffer
 	var outBuff bytes.Buffer
+	var errBuff bytes.Buffer
 
 	//execute javac command to create class file
 	cmd := exec.Command("javac", tempFile)
 	err = cmd.Run()
 	if err != nil {
-		errorResponse.Message = "Javac command failed"
-		return errorResponse
+		return "", err
 	}
 
 	//deletion of tempfile and all .class files with regex
@@ -46,13 +42,11 @@ func RunJavafn(req models.CompileReq) models.CompileResp {
 	classFilePatterns := fmt.Sprintf(`^%s.*%s$`, tempFileNameWOExt, `.class`)
 	classFileRegex, err := regexp.Compile(classFilePatterns)
 	if err != nil {
-		errorResponse.Message = "Regex failed"
-		return errorResponse
+		return "", err
 	}
 	allFiles, err := filepath.Glob("*")
 	if err != nil {
-		errorResponse.Message = "global file search failed"
-		return errorResponse
+		return "", err
 	}
 
 	defer func() {
@@ -73,37 +67,28 @@ func RunJavafn(req models.CompileReq) models.CompileResp {
 		inpBuff.WriteString(fmt.Sprintf("%s\n", inp))
 	}
 
-	//assign cmd.Stdin the input buffer reference
+	//attaching all kinds of buffer to terminal
 	cmd.Stdin = &inpBuff
-
-	//assign cmd.Stdout the output buffer reference
 	cmd.Stdout = &outBuff
+	cmd.Stderr = &errBuff
 
 	// Run the command
 	err = cmd.Run()
 	if err != nil {
-		errorResponse.Message = "File execution failed"
-		return errorResponse
+		return errBuff.String(), nil
 	}
 
 	//return value
-	return models.CompileResp{
-		Status: "SUCCESS",
-		Output: outBuff.String(),
-	}
+	return outBuff.String(), nil
 }
 
-func RunPythonfn(req models.CompileReq) models.CompileResp {
-	var errorResponse = models.CompileResp{
-		Status: "ERROR",
-	}
+func RunPythonfn(req models.CompileReq) (string, error) {
 
 	//create a py file
-	tempFile := req.FileName
+	tempFile := req.FileName + ".py"
 	file, err := os.Create(tempFile)
 	if err != nil {
-		errorResponse.Message = "File Creation Failed"
-		return errorResponse
+		return "", err
 	}
 
 	//write python file
@@ -118,6 +103,7 @@ func RunPythonfn(req models.CompileReq) models.CompileResp {
 	//create input and output buffer
 	var inpBuff bytes.Buffer
 	var outBuff bytes.Buffer
+	var errBuff bytes.Buffer
 
 	//assign cmd command to execute
 	cmd := exec.Command("python3", tempFile)
@@ -127,40 +113,28 @@ func RunPythonfn(req models.CompileReq) models.CompileResp {
 		inpBuff.WriteString(fmt.Sprintf("%s\n", inp))
 	}
 
-	//assign cmd.Stdin the input buffer
+	//attaching all kinds of buffer to terminal
 	cmd.Stdin = &inpBuff
-
-	//assign cmd.Stdout the output buffer
 	cmd.Stdout = &outBuff
+	cmd.Stderr = &errBuff
 
 	// Run the command
 	err = cmd.Run()
 	if err != nil {
-		errorResponse.Message = "File execution failed"
-		return errorResponse
+		return errBuff.String(), nil
 	}
-
-	//get the output as string from output buffer
-	strOutput := outBuff.String()
 
 	//return value
-	return models.CompileResp{
-		Status: "SUCCESS",
-		Output: strOutput,
-	}
+	return outBuff.String(), nil
 }
 
-func RunCppfn(req models.CompileReq) models.CompileResp {
-	var errorResponse = models.CompileResp{
-		Status: "ERROR",
-	}
+func RunCppfn(req models.CompileReq) (string, error) {
 
 	//create a cpp file
-	tempFile := req.FileName
+	tempFile := req.FileName + ".cpp"
 	file, err := os.Create(tempFile)
 	if err != nil {
-		errorResponse.Message = "File Creation Failed"
-		return errorResponse
+		return "", err
 	}
 
 	//write cpp file
@@ -176,6 +150,7 @@ func RunCppfn(req models.CompileReq) models.CompileResp {
 	//create input and output buffer
 	var inpBuff bytes.Buffer
 	var outBuff bytes.Buffer
+	var errBuff bytes.Buffer
 
 	//assign cmd command to create executable
 	cmd := exec.Command("g++", tempFile, "-o", "out")
@@ -183,20 +158,17 @@ func RunCppfn(req models.CompileReq) models.CompileResp {
 	// Run the command to create executable file
 	err = cmd.Run()
 	if err != nil {
-		fmt.Println(err.Error())
-		errorResponse.Message = "Creation Failed"
-		return errorResponse
+		return "", err
 	}
 
 	//assign cmd command to rrun executable file
 	cmd = exec.Command("./out")
 
-	//assign cmd.Stdin the input buffer
+	//attaching all kinds of buffer to terminal
 	cmd.Stdin = &inpBuff
-
-	//assign cmd.Stdout the output buffer
 	cmd.Stdout = &outBuff
-	
+	cmd.Stderr = &errBuff
+
 	//send all inputs to buffer
 	for _, inp := range req.Inputs {
 		inpBuff.WriteString(fmt.Sprintf("%s\n", inp))
@@ -205,33 +177,20 @@ func RunCppfn(req models.CompileReq) models.CompileResp {
 	// Run the command to run executable file
 	err = cmd.Run()
 	if err != nil {
-		fmt.Println(err.Error())
-		errorResponse.Message = "Execution Failed"
-		return errorResponse
+		return errBuff.String(), nil
 	}
-
-	//get the output as string from output buffer
-	strOutput := outBuff.String()
 
 	//return value
-	return models.CompileResp{
-		Status: "SUCCESS",
-		Output: strOutput,
-	}
+	return outBuff.String(), nil
 }
 
-
-func RunGofn(req models.CompileReq) models.CompileResp {
-	var errorResponse = models.CompileResp{
-		Status: "ERROR",
-	}
+func RunGofn(req models.CompileReq) (string, error) {
 
 	//create a go file
-	tempFile := req.FileName
+	tempFile := req.FileName + ".go"
 	file, err := os.Create(tempFile)
 	if err != nil {
-		errorResponse.Message = "File Creation Failed"
-		return errorResponse
+		return "", err
 	}
 
 	//write go file
@@ -246,49 +205,38 @@ func RunGofn(req models.CompileReq) models.CompileResp {
 	//create input and output buffer
 	var inpBuff bytes.Buffer
 	var outBuff bytes.Buffer
+	var errBuff bytes.Buffer
 
 	//assign cmd command to execute
-	cmd := exec.Command("go","run", tempFile)
+	cmd := exec.Command("go", "run", tempFile)
 
 	//send all inputs to buffer
 	for _, inp := range req.Inputs {
 		inpBuff.WriteString(fmt.Sprintf("%s\n", inp))
 	}
 
-	//assign cmd.Stdin the input buffer
+	//attaching all kinds of buffer to terminal
 	cmd.Stdin = &inpBuff
-
-	//assign cmd.Stdout the output buffer
 	cmd.Stdout = &outBuff
+	cmd.Stderr = &errBuff
 
 	// Run the command
 	err = cmd.Run()
 	if err != nil {
-		errorResponse.Message = "File execution failed"
-		return errorResponse
+		return errBuff.String(), nil
 	}
-
-	//get the output as string from output buffer
-	strOutput := outBuff.String()
 
 	//return value
-	return models.CompileResp{
-		Status: "SUCCESS",
-		Output: strOutput,
-	}
+	return outBuff.String(), nil
 }
 
-func RunJSfn(req models.CompileReq) models.CompileResp {
-	var errorResponse = models.CompileResp{
-		Status: "ERROR",
-	}
+func RunJSfn(req models.CompileReq) (string, error) {
 
 	//create a JS file
-	tempFile := req.FileName
+	tempFile := req.FileName + ".js"
 	file, err := os.Create(tempFile)
 	if err != nil {
-		errorResponse.Message = "File Creation Failed"
-		return errorResponse
+		return "", err
 	}
 
 	//write JS file
@@ -303,34 +251,27 @@ func RunJSfn(req models.CompileReq) models.CompileResp {
 	//create input and output buffer
 	var inpBuff bytes.Buffer
 	var outBuff bytes.Buffer
+	var errBuff bytes.Buffer
 
 	//assign cmd command to execute
-	cmd := exec.Command("node","-e", tempFile)
+	cmd := exec.Command("node", tempFile)
 
 	//send all inputs to buffer
 	for _, inp := range req.Inputs {
 		inpBuff.WriteString(fmt.Sprintf("%s\n", inp))
 	}
 
-	//assign cmd.Stdin the input buffer
+	//attaching all kinds of buffer to terminal
 	cmd.Stdin = &inpBuff
-
-	//assign cmd.Stdout the output buffer
 	cmd.Stdout = &outBuff
+	cmd.Stderr = &errBuff
 
 	// Run the command
 	err = cmd.Run()
 	if err != nil {
-		errorResponse.Message = "File execution failed"
-		return errorResponse
+		return errBuff.String(), nil
 	}
-
-	//get the output as string from output buffer
-	strOutput := outBuff.String()
 
 	//return value
-	return models.CompileResp{
-		Status: "SUCCESS",
-		Output: strOutput,
-	}
+	return outBuff.String(), nil
 }

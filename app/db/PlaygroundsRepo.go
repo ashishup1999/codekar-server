@@ -1,6 +1,7 @@
 package db
 
 import (
+	"codekar/app/constants"
 	"codekar/app/models"
 	"context"
 	"time"
@@ -34,11 +35,15 @@ func GetAllPgs(userName string) ([]models.Playground, error) {
 
 func CreateNewPg(req models.CreatePgReq) (string, error) {
 	newPg := models.Playground{
-		Id:        uuid.New().String(),
-		UserName:  req.UserName,
-		PgName:    req.PgName,
-		CreatedAt: time.Now().String(),
-		UpdatedAt: time.Now().String(),
+		Id:         uuid.New().String(),
+		UserName:   req.UserName,
+		PgName:     req.PgName,
+		Java:       constants.JAVA_TEMPLATE,
+		Cpp:        constants.CPP_TEMPLATE,
+		Javascript: constants.JS_TEMPLATE,
+		Go:         constants.GO_TEMPLATE,
+		CreatedAt:  time.Now().String(),
+		UpdatedAt:  time.Now().String(),
 	}
 	collection := dbClient.Database(dbName).Collection("playgrounds")
 	bsonData, err := bson.Marshal(newPg)
