@@ -34,4 +34,10 @@ func SetUphandler(r *gin.Engine) {
 	r.POST("/createNewWbByUser", CreateNewWb)
 	r.GET("/getWbById/:wbId", GetWbById)
 	r.POST("/updateWb", UpdateWbHandler)
+
+	//explore apis
+	r.POST("/getProfilesByName", GetProfilesByNamehandler)
+	r.POST("/getProjsByName", GetProjectsByNamehandler)
+	r.POST("/getPgsByName", GetPgsByNamehandler)
+	r.POST("/getWbsByName", GetWbsByNamehandler)
 }

@@ -8,6 +8,8 @@ import (
 
 	"github.com/google/uuid"
 	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/bson/primitive"
+	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
 func GetAllPgs(userName string) ([]models.Playground, error) {
@@ -89,4 +91,40 @@ func DeletePg(Id string) error {
 		return err
 	}
 	return nil
+}
+
+func GetPgsByName(name string, pageNo int64) ([]models.Playground, error) {
+	var pgs []models.Playground
+	collection := dbClient.Database(dbName).Collection("playgrounds")
+
+	//page configuration
+	perPage := 10
+	skip := int64((pageNo - 1) * int64(perPage))
+
+	// Define options for pagination
+	findOptions := options.Find()
+	findOptions.SetLimit(int64(perPage))
+	findOptions.SetSkip(skip)
+
+	//regex building
+	regex := primitive.Regex{Pattern: name, Options: "i"}
+
+	filter := bson.M{"pgName": bson.M{"$regex": regex}}
+	cursor, err := collection.Find(context.Background(), filter, findOptions)
+	if err != nil {
+		return []models.Playground{}, err
+	}
+
+	defer cursor.Close(context.Background())
+
+	//iterate through cursor
+	for cursor.Next(context.Background()) {
+		var pg models.Playground
+		err := cursor.Decode(&pg)
+		if err != nil {
+			return []models.Playground{}, err
+		}
+		pgs = append(pgs, pg)
+	}
+	return pgs, nil
 }

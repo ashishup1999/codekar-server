@@ -71,3 +71,24 @@ func UpdateWbService(wbReq models.UpdateWbReq) models.UpdateWbResp {
 		Message: "WB_UPDATED_SUCCESSFULY",
 	}
 }
+
+func GetWbsByName(wbName string, pageNo int64) models.AllWbsResp {
+	var resp models.AllWbsResp
+	wbs, err := db.GetWbsByName(wbName, pageNo)
+	if err != nil {
+		resp.Status = "ERROR"
+		resp.Message = "DB_ERROR"
+		return resp
+	}
+	for _, wb := range wbs {
+		wbData := models.WbMeta{
+			WbId:     wb.Id,
+			WbName:   wb.WbName,
+			UserName: wb.UserName,
+		}
+		resp.Wbs = append(resp.Wbs, wbData)
+	}
+	resp.Status = "SUCCESS"
+	resp.Message = "WBS_FETCHED"
+	return resp
+}

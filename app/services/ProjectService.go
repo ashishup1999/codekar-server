@@ -19,7 +19,7 @@ func GetAllProjectsByUser(userName string) models.AllProjectsResp {
 			ProjectId:   proj.Id,
 			ProjectName: proj.ProjectName,
 			UserName:    proj.UserName,
-			PreviewHtml: utils.GetProjectPreview(proj.Html,proj.Css,proj.Javascript),
+			PreviewHtml: utils.GetProjectPreview(proj.Html, proj.Css, proj.Javascript),
 		}
 		resp.Projects = append(resp.Projects, projData)
 	}
@@ -79,4 +79,26 @@ func UpdateProjectService(projReq models.UpdateProjReq) models.UpdateProjResp {
 		Status:  "SUCCESS",
 		Message: "PROJECT_UPDATED_SUCCESSFULY",
 	}
+}
+
+func GetProjectsByName(projectName string, pageNo int64) models.AllProjectsResp {
+	var resp models.AllProjectsResp
+	projects, err := db.GetProjectsByName(projectName, pageNo)
+	if err != nil {
+		resp.Status = "ERROR"
+		resp.Message = "DB_ERROR"
+		return resp
+	}
+	for _, proj := range projects {
+		projData := models.ProjectMeta{
+			ProjectId:   proj.Id,
+			ProjectName: proj.ProjectName,
+			UserName:    proj.UserName,
+			PreviewHtml: utils.GetProjectPreview(proj.Html, proj.Css, proj.Javascript),
+		}
+		resp.Projects = append(resp.Projects, projData)
+	}
+	resp.Status = "SUCCESS"
+	resp.Message = "PROJECTS_FETCHED"
+	return resp
 }

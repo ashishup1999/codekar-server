@@ -7,6 +7,8 @@ import (
 
 	"github.com/google/uuid"
 	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/bson/primitive"
+	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
 func GetAllProjects(userName string) ([]models.Project, error) {
@@ -84,4 +86,40 @@ func DeleteProject(Id string) error {
 		return err
 	}
 	return nil
+}
+
+func GetProjectsByName(name string, pageNo int64) ([]models.Project, error) {
+	var projects []models.Project
+	collection := dbClient.Database(dbName).Collection("projects")
+
+	//page configuration
+	perPage := 10
+	skip := int64((pageNo - 1) * int64(perPage))
+
+	// Define options for pagination
+	findOptions := options.Find()
+	findOptions.SetLimit(int64(perPage))
+	findOptions.SetSkip(skip)
+
+	//regex building
+	regex := primitive.Regex{Pattern: name, Options: "i"}
+
+	filter := bson.M{"projectname": bson.M{"$regex": regex}}
+	cursor, err := collection.Find(context.Background(), filter, findOptions)
+	if err != nil {
+		return []models.Project{}, err
+	}
+
+	defer cursor.Close(context.Background())
+
+	//iterate through cursor
+	for cursor.Next(context.Background()) {
+		var proj models.Project
+		err := cursor.Decode(&proj)
+		if err != nil {
+			return []models.Project{}, err
+		}
+		projects = append(projects, proj)
+	}
+	return projects, nil
 }

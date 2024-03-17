@@ -71,3 +71,24 @@ func UpdatePgService(pgReq models.UpdatePgReq) models.UpdatePgResp {
 		Message: "PG_UPDATED_SUCCESSFULY",
 	}
 }
+
+func GetPlaygroundsByName(pgName string, pageNo int64) models.AllPgsResp {
+	var resp models.AllPgsResp
+	pgs, err := db.GetPgsByName(pgName, pageNo)
+	if err != nil {
+		resp.Status = "ERROR"
+		resp.Message = "DB_ERROR"
+		return resp
+	}
+	for _, pg := range pgs {
+		pgData := models.PgMeta{
+			PgId:     pg.Id,
+			PgName:   pg.PgName,
+			UserName: pg.UserName,
+		}
+		resp.Pgs = append(resp.Pgs, pgData)
+	}
+	resp.Status = "SUCCESS"
+	resp.Message = "PGS_FETCHED"
+	return resp
+}

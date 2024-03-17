@@ -7,6 +7,8 @@ import (
 
 	"github.com/google/uuid"
 	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/bson/primitive"
+	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
 func GetAllWbs(userName string) ([]models.Whiteboard, error) {
@@ -84,4 +86,40 @@ func DeleteWb(Id string) error {
 		return err
 	}
 	return nil
+}
+
+func GetWbsByName(name string, pageNo int64) ([]models.Whiteboard, error) {
+	var wbs []models.Whiteboard
+	collection := dbClient.Database(dbName).Collection("whiteboards")
+
+	//page configuration
+	perPage := 10
+	skip := int64((pageNo - 1) * int64(perPage))
+
+	// Define options for pagination
+	findOptions := options.Find()
+	findOptions.SetLimit(int64(perPage))
+	findOptions.SetSkip(skip)
+
+	//regex building
+	regex := primitive.Regex{Pattern: name, Options: "i"}
+
+	filter := bson.M{"wbName": bson.M{"$regex": regex}}
+	cursor, err := collection.Find(context.Background(), filter, findOptions)
+	if err != nil {
+		return []models.Whiteboard{}, err
+	}
+
+	defer cursor.Close(context.Background())
+
+	//iterate through cursor
+	for cursor.Next(context.Background()) {
+		var wb models.Whiteboard
+		err := cursor.Decode(&wb)
+		if err != nil {
+			return []models.Whiteboard{}, err
+		}
+		wbs = append(wbs, wb)
+	}
+	return wbs, nil
 }
