@@ -21,12 +21,13 @@ func CreateUserAcc(req models.CreateUserReq) models.CreateUserResp {
 	}
 	//if not than create user and return success
 	userObj := models.User{
-		UserName:  req.UserName,
-		Email:     req.Email,
-		FullName:  req.FullName,
-		Password:  req.Password,
-		CreatedAt: time.Now().String(),
-		UpdatedAt: time.Now().String(),
+		UserName:    req.UserName,
+		Email:       req.Email,
+		FullName:    req.FullName,
+		Password:    req.Password,
+		Connections: []string{},
+		CreatedAt:   time.Now().String(),
+		UpdatedAt:   time.Now().String(),
 	}
 	err = db.CreateUser(userObj)
 	if err != nil {

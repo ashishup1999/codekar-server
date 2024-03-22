@@ -1,13 +1,14 @@
 package models
 
 type User struct {
-	Id        string `bson:"_id,omitempty"`
-	UserName  string `bson:"username"`
-	Email     string `bson:"email"`
-	FullName  string `bson:"fullname"`
-	Password  string `bson:"password"`
-	CreatedAt string `bson:"createdat"`
-	UpdatedAt string `bson:"updatedat"`
+	Id          string   `bson:"_id,omitempty"`
+	UserName    string   `bson:"username"`
+	Email       string   `bson:"email"`
+	FullName    string   `bson:"fullname"`
+	Password    string   `bson:"password"`
+	Connections []string `bson:"connections"`
+	CreatedAt   string   `bson:"createdat"`
+	UpdatedAt   string   `bson:"updatedat"`
 }
 
 type CreateUserReq struct {
@@ -37,8 +38,31 @@ type UserMata struct {
 	UserName string `json:"userName" bson:"username"`
 }
 
+type UserMetaResp struct {
+	Status   string `json:"status"`
+	Message  string `json:"message"`
+	UserName string `json:"userName" bson:"username"`
+	FullName string `json:"fullName" bson:"fullname"`
+}
+
 type ProfilesResp struct {
 	Status   string     `json:"status"`
 	Message  string     `json:"message"`
 	Profiles []UserMata `json:"profiles"`
+}
+
+type AddConnectionReq struct {
+	UserName1 string `json:"userName1"`
+	UserName2 string `json:"userName2"`
+}
+
+type StatusResp struct {
+	Status  string `json:"status"`
+	Message string `json:"message"`
+}
+
+type ConnectionsResponse struct {
+	Status      string   `json:"status"`
+	Message     string   `json:"message"`
+	Connections []string `json:"connections"`
 }

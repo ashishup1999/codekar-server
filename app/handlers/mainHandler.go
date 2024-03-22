@@ -13,7 +13,7 @@ func SetUphandler(r *gin.Engine) {
 	//route handling
 	r.POST("/compile", CompileCode)
 
-	//user apis
+	//auth apis
 	r.POST("/createUserAccount", CreateUserHandler)
 	r.POST("/authenticateUser", AuthenticateUserHandler)
 
@@ -40,4 +40,9 @@ func SetUphandler(r *gin.Engine) {
 	r.POST("/getProjsByName", GetProjectsByNamehandler)
 	r.POST("/getPgsByName", GetPgsByNamehandler)
 	r.POST("/getWbsByName", GetWbsByNamehandler)
+
+	//user apis
+	r.POST("/addConnection", AddConnectionHandler)
+	r.GET("/connectionByUser/:userName", GetConnectionsByUserHandler)
+	r.GET("/userInfo/:userName", GetUserInfoHandler)
 }

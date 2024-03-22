@@ -91,6 +91,7 @@ func GetProfilesByName(name string, pageNo int64) ([]models.UserMata, error) {
 	filter := bson.M{"$or": []bson.M{con1, con2}}
 	cursor, err := collection.Find(context.Background(), filter, findOptions)
 	if err != nil {
+		fmt.Println(err.Error())
 		return []models.UserMata{}, err
 	}
 
@@ -101,9 +102,49 @@ func GetProfilesByName(name string, pageNo int64) ([]models.UserMata, error) {
 		var user models.UserMata
 		err := cursor.Decode(&user)
 		if err != nil {
+			fmt.Println(err.Error())
 			return []models.UserMata{}, err
 		}
 		users = append(users, user)
 	}
 	return users, nil
+}
+
+func AddUserConnections(userName1 string, userName2 string) error {
+	collection := dbClient.Database(dbName).Collection("users")
+	filter1 := bson.M{"username": userName1}
+	update1 := bson.M{"$push": bson.M{"connections": userName2}}
+	_, err := collection.UpdateOne(context.Background(), filter1, update1)
+	if err != nil {
+		return err
+	}
+	filter2 := bson.M{"username": userName2}
+	update2 := bson.M{"$push": bson.M{"connections": userName1}}
+	_, err = collection.UpdateOne(context.Background(), filter2, update2)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func GetConnectionsByUser(userName string) ([]string, error) {
+	var userObj models.User
+	collection := dbClient.Database(dbName).Collection("users")
+	bsonData := collection.FindOne(context.Background(), bson.M{"username": userName})
+	err := bsonData.Decode(&userObj)
+	if err != nil {
+		return []string{}, err
+	}
+	return userObj.Connections, nil
+}
+
+func GetUserInfo(userName string) (models.UserMetaResp, error) {
+	var userObj models.UserMetaResp
+	collection := dbClient.Database(dbName).Collection("users")
+	bsonData := collection.FindOne(context.Background(), bson.M{"username": userName})
+	err := bsonData.Decode(&userObj)
+	if err != nil {
+		return models.UserMetaResp{}, err
+	}
+	return userObj, nil
 }
