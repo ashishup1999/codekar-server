@@ -66,3 +66,8 @@ type ConnectionsResponse struct {
 	Message     string   `json:"message"`
 	Connections []string `json:"connections"`
 }
+
+type PasswordUpdateReq struct {
+	Email    string `json:"email"`
+	NewPass string `json:"newPass"`
+}

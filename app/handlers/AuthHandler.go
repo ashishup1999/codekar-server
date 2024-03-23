@@ -43,3 +43,12 @@ func ValidateOtpHandler(c *gin.Context) {
 	}
 	c.JSON(http.StatusAccepted, services.ValidateOtpService(req))
 }
+
+func UpdatePasswordHandler(c *gin.Context) {
+	var req models.PasswordUpdateReq
+	if err := c.BindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"status": "ERROR", "message": err.Error()})
+		return
+	}
+	c.JSON(http.StatusAccepted, services.UpdatePasswordService(req))
+}

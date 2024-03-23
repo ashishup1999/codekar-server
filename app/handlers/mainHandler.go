@@ -18,6 +18,7 @@ func SetUphandler(r *gin.Engine) {
 	r.POST("/authenticateUser", AuthenticateUserHandler)
 	r.GET("/getVerificationCode/:email", GetVerificationCodeHandler)
 	r.POST("/vlidateOtp", ValidateOtpHandler)
+	r.POST("/updatePassword", UpdatePasswordHandler)
 
 	//project apis
 	r.GET("/getAllProjectsByUser/:userName", GetAllUserProjshandler)

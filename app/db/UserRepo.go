@@ -163,3 +163,14 @@ func GetUserInfo(userName string) (models.UserMetaResp, error) {
 	}
 	return userObj, nil
 }
+
+func UpdateUserPasword(email string, newPass string) error {
+	collection := dbClient.Database(dbName).Collection("users")
+	filter := bson.M{"email": email}
+	update := bson.M{"$set": bson.M{"password": newPass}}
+	_, err := collection.UpdateOne(context.Background(), filter, update)
+	if err != nil {
+		return err
+	}
+	return nil
+}

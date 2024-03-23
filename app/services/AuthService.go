@@ -120,3 +120,16 @@ func ValidateOtpService(req models.OtpReq) models.OtpRes {
 	resp.Message = "OTP_VALIDATION_SUCCESSFUL"
 	return resp
 }
+
+func UpdatePasswordService(req models.PasswordUpdateReq) models.AuthenticateUserResp {
+	var resp models.AuthenticateUserResp
+	err := db.UpdateUserPasword(req.Email, req.NewPass)
+	if err != nil {
+		resp.Status = "ERROR"
+		resp.Message = "PASSWORD_COULD_NOT_BE_UPDATED"
+		return resp
+	}
+	resp.Status = "SUCCESS"
+	resp.Message = "PASSWORD_UPDATED_SUCCESSFULY"
+	return resp
+}
