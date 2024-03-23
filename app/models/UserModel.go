@@ -39,10 +39,11 @@ type UserMata struct {
 }
 
 type UserMetaResp struct {
-	Status   string `json:"status"`
-	Message  string `json:"message"`
-	UserName string `json:"userName" bson:"username"`
-	FullName string `json:"fullName" bson:"fullname"`
+	Status      string `json:"status"`
+	Message     string `json:"message"`
+	UserName    string `json:"userName" bson:"username"`
+	FullName    string `json:"fullName" bson:"fullname"`
+	Connections []string `json:"connections" bson:"connections"`
 }
 
 type ProfilesResp struct {
@@ -68,6 +69,6 @@ type ConnectionsResponse struct {
 }
 
 type PasswordUpdateReq struct {
-	Email    string `json:"email"`
+	Email   string `json:"email"`
 	NewPass string `json:"newPass"`
 }
