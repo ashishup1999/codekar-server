@@ -57,3 +57,18 @@ func GetUserInfo(userName string) models.UserMetaResp {
 	resp.Message = "USER_INFO_FETCHED_SUCCESSFULY"
 	return resp
 }
+
+func DeleteWbService(wbId string) models.UpdateProjResp {
+	err := db.DeleteWb(wbId)
+	if err != nil {
+		resp := models.UpdateProjResp{
+			Status:  "ERROR",
+			Message: "DB_ERROR",
+		}
+		return resp
+	}
+	return models.UpdateProjResp{
+		Status:  "SUCCESS",
+		Message: "WB_DELETED_SUCCESSFULY",
+	}
+}

@@ -34,3 +34,12 @@ func GetUserInfoHandler(c *gin.Context) {
 	}
 	c.JSON(http.StatusAccepted, services.GetUserInfo(userName))
 }
+
+func DeleteWbHandler(c *gin.Context) {
+	wbId := c.Param("wbId")
+	if wbId == "" {
+		c.JSON(http.StatusBadRequest, gin.H{"status": "ERROR"})
+		return
+	}
+	c.JSON(http.StatusAccepted, services.DeleteWbService(wbId))
+}

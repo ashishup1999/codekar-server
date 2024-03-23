@@ -92,3 +92,18 @@ func GetPlaygroundsByName(pgName string, pageNo int64) models.AllPgsResp {
 	resp.Message = "PGS_FETCHED"
 	return resp
 }
+
+func DeletePgService(pgId string) models.UpdateProjResp {
+	err := db.DeletePg(pgId)
+	if err != nil {
+		resp := models.UpdateProjResp{
+			Status:  "ERROR",
+			Message: "DB_ERROR",
+		}
+		return resp
+	}
+	return models.UpdateProjResp{
+		Status:  "SUCCESS",
+		Message: "PG_DELETED_SUCCESSFULY",
+	}
+}

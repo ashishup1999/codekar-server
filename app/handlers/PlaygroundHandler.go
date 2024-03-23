@@ -43,3 +43,12 @@ func UpdatePgHandler(c *gin.Context) {
 	}
 	c.JSON(http.StatusAccepted, services.UpdatePgService(req))
 }
+
+func DeletePgHandler(c *gin.Context) {
+	pgId := c.Param("pgId")
+	if pgId == "" {
+		c.JSON(http.StatusBadRequest, gin.H{"status": "ERROR"})
+		return
+	}
+	c.JSON(http.StatusAccepted, services.DeletePgService(pgId))
+}

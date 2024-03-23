@@ -102,3 +102,19 @@ func GetProjectsByName(projectName string, pageNo int64) models.AllProjectsResp 
 	resp.Message = "PROJECTS_FETCHED"
 	return resp
 }
+
+
+func DeleteProjectService(projId string) models.UpdateProjResp {
+	err := db.DeleteProject(projId)
+	if err != nil {
+		resp := models.UpdateProjResp{
+			Status:  "ERROR",
+			Message: "DB_ERROR",
+		}
+		return resp
+	}
+	return models.UpdateProjResp{
+		Status:  "SUCCESS",
+		Message: "PROJECT_DELETED_SUCCESSFULY",
+	}
+}

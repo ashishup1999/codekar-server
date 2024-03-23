@@ -43,3 +43,12 @@ func UpdateProjectHandler(c *gin.Context) {
 	}
 	c.JSON(http.StatusAccepted, services.UpdateProjectService(req))
 }
+
+func DeleteProjectHandler(c *gin.Context) {
+	projId := c.Param("projId")
+	if projId == "" {
+		c.JSON(http.StatusBadRequest, gin.H{"status": "ERROR"})
+		return
+	}
+	c.JSON(http.StatusAccepted, services.DeleteProjectService(projId))
+}

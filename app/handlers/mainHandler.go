@@ -25,18 +25,21 @@ func SetUphandler(r *gin.Engine) {
 	r.POST("/createNewProjectByUser", CreateNewProject)
 	r.GET("/getProjectById/:projId", GetProjectById)
 	r.POST("/updateProject", UpdateProjectHandler)
+	r.GET("/deleteProject/:projId", DeleteProjectHandler)
 
 	//pg apis
 	r.GET("/getAllPgsByUser/:userName", GetAllUserPgshandler)
 	r.POST("/createNewPgByUser", CreateNewPg)
 	r.GET("/getPgById/:pgId", GetPgById)
 	r.POST("/updatePg", UpdatePgHandler)
+	r.GET("/deletePg/:pgId", DeletePgHandler)
 
 	//wb apis
 	r.GET("/getAllWbsByUser/:userName", GetAllUserWbshandler)
 	r.POST("/createNewWbByUser", CreateNewWb)
 	r.GET("/getWbById/:wbId", GetWbById)
 	r.POST("/updateWb", UpdateWbHandler)
+	r.GET("/deleteWb/:wbId", DeleteWbHandler)
 
 	//explore apis
 	r.POST("/getProfilesByName", GetProfilesByNamehandler)
