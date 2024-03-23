@@ -82,7 +82,7 @@ func GetVerificationCode(email string) models.AuthenticateUserResp {
 		return resp
 	} else if !userExists {
 		resp.Status = "ERROR"
-		resp.Message = "USER_DOES_NOT_EXIST"
+		resp.Message = "EMAIL_DOES_NOT_EXIST"
 		return resp
 	}
 	//generate otp
