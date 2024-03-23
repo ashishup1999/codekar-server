@@ -43,6 +43,21 @@ func UserExistsByUsername(userName string) (bool, error) {
 	return true, nil
 }
 
+func UserExistsByEmail(email string) (bool, error) {
+	var userObj models.User
+	collection := dbClient.Database(dbName).Collection("users")
+	filter := bson.M{"email": email}
+	bsonData := collection.FindOne(context.Background(), filter)
+	err := bsonData.Decode(&userObj)
+	if err != nil {
+		fmt.Println(err.Error())
+	}
+	if userObj.Email == "" {
+		return false, nil
+	}
+	return true, nil
+}
+
 func CreateUser(userObj models.User) error {
 	collection := dbClient.Database(dbName).Collection("users")
 	userObj.Id = uuid.New().String()

@@ -3,6 +3,8 @@ package services
 import (
 	"codekar/app/db"
 	"codekar/app/models"
+	"codekar/app/utils"
+	"fmt"
 	"time"
 )
 
@@ -66,5 +68,55 @@ func AuthenticateUser(req models.AuthenticateUserReq) models.AuthenticateUserRes
 	}
 	resp.Status = "ERROR"
 	resp.Message = "FALSE_CREDS"
+	return resp
+}
+
+func GetVerificationCode(email string) models.AuthenticateUserResp {
+	var resp models.AuthenticateUserResp
+
+	//check if user exists
+	userExists, err := db.UserExistsByEmail(email)
+	if err != nil {
+		resp.Status = "ERROR"
+		resp.Message = "DB_ERROR"
+		return resp
+	} else if !userExists {
+		resp.Status = "ERROR"
+		resp.Message = "USER_DOES_NOT_EXIST"
+		return resp
+	}
+	//generate otp
+	otp, err := db.SetOtp(email)
+	if err != nil {
+		resp.Status = "ERROR"
+		resp.Message = "OTP_GENERATION_FAILED"
+		return resp
+	}
+
+	err = utils.SendOtpOnMail(email, otp)
+	if err != nil {
+		fmt.Println(err.Error())
+		resp.Status = "ERROR"
+		resp.Message = "UNABLE_TO_SEND_MAIL"
+		return resp
+	}
+
+	resp.Status = "SUCCESS"
+	resp.Message = "VERIFICATION_CODE_GENERATED"
+	return resp
+}
+
+func ValidateOtpService(req models.OtpReq) models.OtpRes {
+	var resp models.OtpRes
+
+	//check if user exists
+	err := db.ValidateOtp(req)
+	if err != nil {
+		resp.Status = "ERROR"
+		resp.Message = err.Error()
+		return resp
+	}
+	resp.Status = "SUCCESS"
+	resp.Message = "OTP_VALIDATION_SUCCESSFUL"
 	return resp
 }
