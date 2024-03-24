@@ -1,6 +1,7 @@
 package db
 
 import (
+	"codekar/app/constants"
 	"codekar/app/models"
 	"context"
 	"time"
@@ -36,11 +37,15 @@ func GetAllWbs(userName string) ([]models.Whiteboard, error) {
 
 func CreateNewWb(req models.CreateWbReq) (string, error) {
 	newWb := models.Whiteboard{
-		Id:        uuid.New().String(),
-		UserName:  req.UserName,
-		WbName:    req.WbName,
-		CreatedAt: time.Now().String(),
-		UpdatedAt: time.Now().String(),
+		Id:         uuid.New().String(),
+		UserName:   req.UserName,
+		WbName:     req.WbName,
+		Java:       constants.JAVA_TEMPLATE,
+		Cpp:        constants.CPP_TEMPLATE,
+		Javascript: constants.JS_TEMPLATE,
+		Go:         constants.GO_TEMPLATE,
+		CreatedAt:  time.Now().String(),
+		UpdatedAt:  time.Now().String(),
 	}
 	collection := dbClient.Database(dbName).Collection("whiteboards")
 	bsonData, err := bson.Marshal(newWb)
