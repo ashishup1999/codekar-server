@@ -3,7 +3,6 @@ package main
 import (
 	"codekar/app/db"
 	"codekar/app/handlers"
-	"fmt"
 	"log"
 	"os"
 
@@ -13,11 +12,7 @@ import (
 
 func main() {
 	// Load environment variables from .env file
-	err := godotenv.Load(".env")
-	if err != nil {
-		fmt.Println("Error loading .env file:", err)
-		return
-	}
+	godotenv.Load(".env")
 
 	//setup db
 	dbURI := os.Getenv("DB_URI")
