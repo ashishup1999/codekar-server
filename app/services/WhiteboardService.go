@@ -3,10 +3,22 @@ package services
 import (
 	"codekar/app/db"
 	"codekar/app/models"
+
+	"go.mongodb.org/mongo-driver/mongo"
 )
 
 func GetAllWbsByUser(userName string) models.AllWbsResp {
 	var resp models.AllWbsResp
+	validUsername, err := db.UserExistsByUsername(userName)
+	if !validUsername {
+		resp.Status = "ERROR"
+		resp.Message = "USER_DOES_NOT_EXISTS"
+		return resp
+	} else if err != nil {
+		resp.Status = "ERROR"
+		resp.Message = "DB_ERROR"
+		return resp
+	}
 	wbs, err := db.GetAllWbs(userName)
 	if err != nil {
 		resp.Status = "ERROR"
@@ -46,6 +58,9 @@ func GetWbDataById(wbId string) models.SingleWbResp {
 		resp := models.SingleWbResp{
 			Status:  "ERROR",
 			Message: "DB_ERROR",
+		}
+		if err.Error() == mongo.ErrNoDocuments.Error() {
+			resp.Message = "WB_DOES_NOT_EXISTS"
 		}
 		return resp
 	}

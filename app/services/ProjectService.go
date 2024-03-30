@@ -4,10 +4,22 @@ import (
 	"codekar/app/db"
 	"codekar/app/models"
 	"codekar/app/utils"
+
+	"go.mongodb.org/mongo-driver/mongo"
 )
 
 func GetAllProjectsByUser(userName string) models.AllProjectsResp {
 	var resp models.AllProjectsResp
+	validUsername, err := db.UserExistsByUsername(userName)
+	if !validUsername {
+		resp.Status = "ERROR"
+		resp.Message = "USER_DOES_NOT_EXISTS"
+		return resp
+	} else if err != nil {
+		resp.Status = "ERROR"
+		resp.Message = "DB_ERROR"
+		return resp
+	}
 	projects, err := db.GetAllProjects(userName)
 	if err != nil {
 		resp.Status = "ERROR"
@@ -48,6 +60,9 @@ func GetProjectDataById(projectId string) models.SingleProjectsResp {
 		resp := models.SingleProjectsResp{
 			Status:  "ERROR",
 			Message: "DB_ERROR",
+		}
+		if err.Error() == mongo.ErrNoDocuments.Error() {
+			resp.Message = "PROJECT_DOES_NOT_EXISTS"
 		}
 		return resp
 	}
@@ -102,7 +117,6 @@ func GetProjectsByName(projectName string, pageNo int64) models.AllProjectsResp 
 	resp.Message = "PROJECTS_FETCHED"
 	return resp
 }
-
 
 func DeleteProjectService(projId string) models.UpdateProjResp {
 	err := db.DeleteProject(projId)

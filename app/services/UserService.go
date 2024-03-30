@@ -47,7 +47,18 @@ func GetConnectionsByUser(userName string) models.ConnectionsResponse {
 }
 
 func GetUserInfo(userName string) models.UserMetaResp {
-	resp, err := db.GetUserInfo(userName)
+	var resp models.UserMetaResp
+	validUsername, err := db.UserExistsByUsername(userName)
+	if !validUsername {
+		resp.Status = "ERROR"
+		resp.Message = "USER_DOES_NOT_EXISTS"
+		return resp
+	} else if err != nil {
+		resp.Status = "ERROR"
+		resp.Message = "DB_ERROR"
+		return resp
+	}
+	resp, err = db.GetUserInfo(userName)
 	if err != nil {
 		resp.Status = "ERROR"
 		resp.Message = "DB_ERROR"
