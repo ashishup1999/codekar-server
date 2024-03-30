@@ -31,9 +31,14 @@ func RunJavafn(req models.CompileReq) (string, error) {
 
 	//execute javac command to create class file
 	cmd := exec.Command("javac", tempFile)
+
+	//attaching error buffer to terminal to detect if any error comes out
+	cmd.Stderr = &errBuff
+
+	//run cmd
 	err = cmd.Run()
 	if err != nil {
-		return "", err
+		return errBuff.String(), nil
 	}
 
 	//deletion of tempfile and all .class files with regex
@@ -75,6 +80,7 @@ func RunJavafn(req models.CompileReq) (string, error) {
 	// Run the command
 	err = cmd.Run()
 	if err != nil {
+		fmt.Println(err, outBuff.String())
 		return errBuff.String(), nil
 	}
 
