@@ -1,14 +1,15 @@
 package models
 
 type User struct {
-	Id          string   `bson:"_id,omitempty"`
-	UserName    string   `bson:"username"`
-	Email       string   `bson:"email"`
-	FullName    string   `bson:"fullname"`
-	Password    string   `bson:"password"`
-	Connections []string `bson:"connections"`
-	CreatedAt   string   `bson:"createdat"`
-	UpdatedAt   string   `bson:"updatedat"`
+	Id            string   `bson:"_id,omitempty"`
+	UserName      string   `bson:"username"`
+	Email         string   `bson:"email"`
+	FullName      string   `bson:"fullname"`
+	Password      string   `bson:"password"`
+	Connections   []string `bson:"connections"`
+	ConnectionReq []string `bson:"connReqs"`
+	CreatedAt     string   `bson:"createdat"`
+	UpdatedAt     string   `bson:"updatedat"`
 }
 
 type CreateUserReq struct {
@@ -39,10 +40,10 @@ type UserMata struct {
 }
 
 type UserMetaResp struct {
-	Status      string `json:"status"`
-	Message     string `json:"message"`
-	UserName    string `json:"userName" bson:"username"`
-	FullName    string `json:"fullName" bson:"fullname"`
+	Status      string   `json:"status"`
+	Message     string   `json:"message"`
+	UserName    string   `json:"userName" bson:"username"`
+	FullName    string   `json:"fullName" bson:"fullname"`
 	Connections []string `json:"connections" bson:"connections"`
 }
 
@@ -53,8 +54,8 @@ type ProfilesResp struct {
 }
 
 type AddConnectionReq struct {
-	UserName1 string `json:"userName1"`
-	UserName2 string `json:"userName2"`
+	Sender string `json:"sender"`
+	Reciever string `json:"reciever"`
 }
 
 type StatusResp struct {

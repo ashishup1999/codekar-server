@@ -48,7 +48,10 @@ func SetUphandler(r *gin.Engine) {
 	r.POST("/getWbsByName", GetWbsByNamehandler)
 
 	//user apis
+	r.POST("/connectionReq", ConnectionReqHandler)
+	r.POST("/rejectConnectionReq", RejectConnectionReqHandler)
 	r.POST("/addConnection", AddConnectionHandler)
+	r.POST("/removeConnection", RemoveConnectionHandler)
 	r.GET("/connectionByUser/:userName", GetConnectionsByUserHandler)
 	r.GET("/userInfo/:userName", GetUserInfoHandler)
 }

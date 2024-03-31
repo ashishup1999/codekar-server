@@ -8,13 +8,40 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+func ConnectionReqHandler(c *gin.Context) {
+	var req models.AddConnectionReq
+	if err := c.BindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"status": "ERROR", "message": err.Error()})
+		return
+	}
+	c.JSON(http.StatusAccepted, services.ConnectionReqService(req.Sender, req.Reciever))
+}
+
+func RejectConnectionReqHandler(c *gin.Context) {
+	var req models.AddConnectionReq
+	if err := c.BindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"status": "ERROR", "message": err.Error()})
+		return
+	}
+	c.JSON(http.StatusAccepted, services.RejectConnectionReqService(req.Reciever, req.Sender))
+}
+
 func AddConnectionHandler(c *gin.Context) {
 	var req models.AddConnectionReq
 	if err := c.BindJSON(&req); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"status": "ERROR", "message": err.Error()})
 		return
 	}
-	c.JSON(http.StatusAccepted, services.AddConnection(req.UserName1, req.UserName2))
+	c.JSON(http.StatusAccepted, services.AddConnection(req.Reciever, req.Sender))
+}
+
+func RemoveConnectionHandler(c *gin.Context) {
+	var req models.AddConnectionReq
+	if err := c.BindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"status": "ERROR", "message": err.Error()})
+		return
+	}
+	c.JSON(http.StatusAccepted, services.RemoveConnection(req.Reciever, req.Sender))
 }
 
 func GetConnectionsByUserHandler(c *gin.Context) {

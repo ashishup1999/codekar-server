@@ -19,9 +19,35 @@ func GetProfilesByNameService(name string, pageNo int64) models.ProfilesResp {
 	return resp
 }
 
-func AddConnection(userName1 string, userName2 string) models.StatusResp {
+func ConnectionReqService(sender string, reciever string) models.StatusResp {
 	var resp models.StatusResp
-	err := db.AddUserConnections(userName1, userName2)
+	err := db.ConnectionReqs(sender, reciever)
+	if err != nil {
+		resp.Status = "ERROR"
+		resp.Message = "DB_ERROR"
+		return resp
+	}
+	resp.Status = "SUCCESS"
+	resp.Message = "CONNECTION_REQUEST_SENT"
+	return resp
+}
+
+func RejectConnectionReqService(reciever string, sender string) models.StatusResp {
+	var resp models.StatusResp
+	err := db.RejectConnectionReqs(reciever, sender)
+	if err != nil {
+		resp.Status = "ERROR"
+		resp.Message = "DB_ERROR"
+		return resp
+	}
+	resp.Status = "SUCCESS"
+	resp.Message = "CONNECTION_REQUEST_REJECTED"
+	return resp
+}
+
+func AddConnection(reciever string, sender string) models.StatusResp {
+	var resp models.StatusResp
+	err := db.AddUserConnections(reciever, sender)
 	if err != nil {
 		resp.Status = "ERROR"
 		resp.Message = "DB_ERROR"
@@ -29,6 +55,19 @@ func AddConnection(userName1 string, userName2 string) models.StatusResp {
 	}
 	resp.Status = "SUCCESS"
 	resp.Message = "CONNECTION_ADDED_SUCCESSFULY"
+	return resp
+}
+
+func RemoveConnection(reciever string, sender string) models.StatusResp {
+	var resp models.StatusResp
+	err := db.RemoveUserConnection(reciever, sender)
+	if err != nil {
+		resp.Status = "ERROR"
+		resp.Message = "DB_ERROR"
+		return resp
+	}
+	resp.Status = "SUCCESS"
+	resp.Message = "CONNECTION_REMOVED_SUCCESSFULY"
 	return resp
 }
 
