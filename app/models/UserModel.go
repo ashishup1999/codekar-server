@@ -69,6 +69,13 @@ type ConnectionsResponse struct {
 	Connections []string `json:"connections"`
 }
 
+type AllConnReqsResp struct {
+	Status      string   `json:"status"`
+	Message     string   `json:"message"`
+	ConnectionReq []string `json:"connectionReqs"`
+}
+
+
 type PasswordUpdateReq struct {
 	Email   string `json:"email"`
 	NewPass string `json:"newPass"`

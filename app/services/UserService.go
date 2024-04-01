@@ -32,6 +32,33 @@ func ConnectionReqService(sender string, reciever string) models.StatusResp {
 	return resp
 }
 
+func GetAllConnectionReqsService(userName string) models.AllConnReqsResp {
+	var resp models.AllConnReqsResp
+	connReqs, err := db.GetAllConnectionReqs(userName)
+	if err != nil {
+		resp.Status = "ERROR"
+		resp.Message = "DB_ERROR"
+		return resp
+	}
+	resp.Status = "SUCCESS"
+	resp.Message = "REQUESTS_FETCHED"
+	resp.ConnectionReq = connReqs
+	return resp
+}
+
+func ConnectionStatusService(sender string, reciever string) models.StatusResp {
+	var resp models.StatusResp
+	msg, err := db.ConnectionStatus(sender, reciever)
+	if err != nil {
+		resp.Status = "ERROR"
+		resp.Message = "DB_ERROR"
+		return resp
+	}
+	resp.Status = "SUCCESS"
+	resp.Message = msg
+	return resp
+}
+
 func RejectConnectionReqService(reciever string, sender string) models.StatusResp {
 	var resp models.StatusResp
 	err := db.RejectConnectionReqs(reciever, sender)

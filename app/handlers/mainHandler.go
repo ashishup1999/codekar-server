@@ -49,6 +49,8 @@ func SetUphandler(r *gin.Engine) {
 
 	//user apis
 	r.POST("/connectionReq", ConnectionReqHandler)
+	r.GET("/getAllConnectionReqs/:userName", GetAllConnectionReqsHandler)
+	r.POST("/connectionStatus", ConnectionStatusHandler)
 	r.POST("/rejectConnectionReq", RejectConnectionReqHandler)
 	r.POST("/addConnection", AddConnectionHandler)
 	r.POST("/removeConnection", RemoveConnectionHandler)

@@ -133,7 +133,7 @@ func ConnectionReqs(sender string, reciever string) error {
 	var existObj bson.M
 	existFilter := bson.M{"username": reciever, "connReqs": bson.M{"$in": []string{sender}}}
 	existData := collection.FindOne(context.Background(), existFilter)
-	err := existData.Decode(existObj)
+	err := existData.Decode(&existObj)
 	if err != nil && err.Error() != mongo.ErrNoDocuments.Error() {
 		return err
 	} else if err == nil {
@@ -145,6 +145,44 @@ func ConnectionReqs(sender string, reciever string) error {
 		return err
 	}
 	return nil
+}
+
+func GetAllConnectionReqs(userName string) ([]string, error) {
+	collection := dbClient.Database(dbName).Collection("users")
+	filter := bson.M{"username": userName}
+	var userObj models.User
+	userData := collection.FindOne(context.Background(), filter)
+	err := userData.Decode(&userObj)
+	if err != nil {
+		return []string{}, err
+	}
+	return userObj.ConnectionReq, nil
+}
+
+func ConnectionStatus(sender string, reciever string) (string, error) {
+	collection := dbClient.Database(dbName).Collection("users")
+	//check if alreadyConnected
+	var connObj bson.M
+	connFilter := bson.M{"username": reciever, "connections": bson.M{"$in": []string{sender}}}
+	connData := collection.FindOne(context.Background(), connFilter)
+	err := connData.Decode(&connObj)
+	if err == nil {
+		return "CONNECTED", nil
+	} else if err.Error() != mongo.ErrNoDocuments.Error() {
+		return "", err
+	}
+	//check if connnection request exists
+	var existObj bson.M
+	existFilter := bson.M{"username": reciever, "connReqs": bson.M{"$in": []string{sender}}}
+	existData := collection.FindOne(context.Background(), existFilter)
+	err = existData.Decode(&existObj)
+	if err == nil {
+		return "CONNECTION_REQUESTED", nil
+	} else if err.Error() != mongo.ErrNoDocuments.Error() {
+		return "", err
+	}
+	//if not any of the above
+	return "NOT_CONNECTED", nil
 }
 
 func RejectConnectionReqs(reciever string, sender string) error {
@@ -163,6 +201,12 @@ func AddUserConnections(reciever string, sender string) error {
 	filterConnReq := bson.M{"username": reciever}
 	updateConnReq := bson.M{"$pull": bson.M{"connReqs": sender}}
 	_, err := collection.UpdateOne(context.Background(), filterConnReq, updateConnReq)
+	if err != nil {
+		return err
+	}
+	filterConnReq = bson.M{"username": sender}
+	updateConnReq = bson.M{"$pull": bson.M{"connReqs": reciever}}
+	_, err = collection.UpdateOne(context.Background(), filterConnReq, updateConnReq)
 	if err != nil {
 		return err
 	}

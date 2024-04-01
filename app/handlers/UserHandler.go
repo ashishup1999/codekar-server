@@ -17,6 +17,24 @@ func ConnectionReqHandler(c *gin.Context) {
 	c.JSON(http.StatusAccepted, services.ConnectionReqService(req.Sender, req.Reciever))
 }
 
+func ConnectionStatusHandler(c *gin.Context) {
+	var req models.AddConnectionReq
+	if err := c.BindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"status": "ERROR", "message": err.Error()})
+		return
+	}
+	c.JSON(http.StatusAccepted, services.ConnectionStatusService(req.Sender, req.Reciever))
+}
+
+func GetAllConnectionReqsHandler(c *gin.Context) {
+	userName := c.Param("userName")
+	if userName == "" {
+		c.JSON(http.StatusBadRequest, gin.H{"status": "ERROR", "message": "BAD_REQUEST"})
+		return
+	}
+	c.JSON(http.StatusAccepted, services.GetAllConnectionReqsService(userName))
+}
+
 func RejectConnectionReqHandler(c *gin.Context) {
 	var req models.AddConnectionReq
 	if err := c.BindJSON(&req); err != nil {
