@@ -88,3 +88,12 @@ func DeleteWbHandler(c *gin.Context) {
 	}
 	c.JSON(http.StatusAccepted, services.DeleteWbService(wbId))
 }
+
+func UpdateUserDetailsHandler(c *gin.Context) {
+	var req models.EditUserReq
+	if err := c.BindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"status": "ERROR", "message": err.Error()})
+		return
+	}
+	c.JSON(http.StatusAccepted, services.UpdateUserDetailsService(req))
+}

@@ -54,7 +54,7 @@ type ProfilesResp struct {
 }
 
 type AddConnectionReq struct {
-	Sender string `json:"sender"`
+	Sender   string `json:"sender"`
 	Reciever string `json:"reciever"`
 }
 
@@ -70,13 +70,21 @@ type ConnectionsResponse struct {
 }
 
 type AllConnReqsResp struct {
-	Status      string   `json:"status"`
-	Message     string   `json:"message"`
+	Status        string   `json:"status"`
+	Message       string   `json:"message"`
 	ConnectionReq []string `json:"connectionReqs"`
 }
-
 
 type PasswordUpdateReq struct {
 	Email   string `json:"email"`
 	NewPass string `json:"newPass"`
+}
+
+type EditUserReq struct {
+	UserName     string `json:"userName"`
+	NewUserName  string `json:"newUserName"`
+	NewEmail     string `json:"newEmail"`
+	NewFullName  string `json:"newFullName"`
+	CurrPassword string `json:"currPassword"`
+	NewPassword  string `json:"newPassword"`
 }

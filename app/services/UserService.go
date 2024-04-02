@@ -149,3 +149,18 @@ func DeleteWbService(wbId string) models.UpdateProjResp {
 		Message: "WB_DELETED_SUCCESSFULY",
 	}
 }
+
+func UpdateUserDetailsService(req models.EditUserReq) models.StatusResp {
+	msg, err := db.UpdateUserDetails(req)
+	if err != nil {
+		resp := models.StatusResp{
+			Status:  "ERROR",
+			Message: "DB_ERROR",
+		}
+		return resp
+	}
+	return models.StatusResp{
+		Status:  "SUCCESS",
+		Message: msg,
+	}
+}

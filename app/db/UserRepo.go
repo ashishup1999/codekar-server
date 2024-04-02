@@ -2,9 +2,8 @@ package db
 
 import (
 	"codekar/app/models"
+	"codekar/app/utils"
 	"context"
-	"errors"
-	"fmt"
 
 	"github.com/google/uuid"
 	"go.mongodb.org/mongo-driver/bson"
@@ -21,8 +20,10 @@ func UserExistsByUsernameEmail(userName string, email string) (bool, error) {
 	filter := bson.M{"$or": []bson.M{con1, con2}}
 	bsonData := collection.FindOne(context.Background(), filter)
 	err := bsonData.Decode(&userObj)
-	if err != nil {
-		fmt.Println(err.Error())
+	if err != nil && err.Error() == mongo.ErrNoDocuments.Error() {
+		return false, nil
+	} else if err != nil {
+		return false, err
 	}
 	if userObj.UserName == "" {
 		return false, nil
@@ -36,8 +37,10 @@ func UserExistsByUsername(userName string) (bool, error) {
 	filter := bson.M{"username": userName}
 	bsonData := collection.FindOne(context.Background(), filter)
 	err := bsonData.Decode(&userObj)
-	if err != nil {
-		fmt.Println(err.Error())
+	if err != nil && err.Error() == mongo.ErrNoDocuments.Error() {
+		return false, nil
+	} else if err != nil {
+		return false, err
 	}
 	if userObj.UserName == "" {
 		return false, nil
@@ -51,8 +54,10 @@ func UserExistsByEmail(email string) (bool, error) {
 	filter := bson.M{"email": email}
 	bsonData := collection.FindOne(context.Background(), filter)
 	err := bsonData.Decode(&userObj)
-	if err != nil {
-		fmt.Println(err.Error())
+	if err != nil && err.Error() == mongo.ErrNoDocuments.Error() {
+		return false, nil
+	} else if err != nil {
+		return false, err
 	}
 	if userObj.Email == "" {
 		return false, nil
@@ -108,7 +113,6 @@ func GetProfilesByName(name string, pageNo int64) ([]models.UserMata, error) {
 	filter := bson.M{"$or": []bson.M{con1, con2}}
 	cursor, err := collection.Find(context.Background(), filter, findOptions)
 	if err != nil {
-		fmt.Println(err.Error())
 		return []models.UserMata{}, err
 	}
 
@@ -119,7 +123,6 @@ func GetProfilesByName(name string, pageNo int64) ([]models.UserMata, error) {
 		var user models.UserMata
 		err := cursor.Decode(&user)
 		if err != nil {
-			fmt.Println(err.Error())
 			return []models.UserMata{}, err
 		}
 		users = append(users, user)
@@ -129,17 +132,30 @@ func GetProfilesByName(name string, pageNo int64) ([]models.UserMata, error) {
 
 func ConnectionReqs(sender string, reciever string) error {
 	collection := dbClient.Database(dbName).Collection("users")
-	filter := bson.M{"username": reciever}
-	var existObj bson.M
-	existFilter := bson.M{"username": reciever, "connReqs": bson.M{"$in": []string{sender}}}
-	existData := collection.FindOne(context.Background(), existFilter)
-	err := existData.Decode(&existObj)
-	if err != nil && err.Error() != mongo.ErrNoDocuments.Error() {
+
+	//getting sender info
+	var senderObj models.User
+	senderData := collection.FindOne(context.Background(), bson.M{"username": sender})
+	err := senderData.Decode(&senderObj)
+	if err != nil {
 		return err
-	} else if err == nil {
-		return errors.New("CONNECTION_REQUEST_ALREADY_SENT")
 	}
-	update := bson.M{"$push": bson.M{"connReqs": sender}}
+
+	//getting sender info
+	var recieverObj models.User
+	recieverData := collection.FindOne(context.Background(), bson.M{"username": reciever})
+	err = recieverData.Decode(&recieverObj)
+	if err != nil {
+		return err
+	}
+
+	connStatus, err := ConnectionStatus(sender, reciever)
+	if err != nil || connStatus != "NOT_CONNECTED" {
+		return err
+	}
+
+	filter := bson.M{"username": reciever}
+	update := bson.M{"$push": bson.M{"connReqs": senderObj.Id}}
 	_, err = collection.UpdateOne(context.Background(), filter, update)
 	if err != nil {
 		return err
@@ -149,6 +165,8 @@ func ConnectionReqs(sender string, reciever string) error {
 
 func GetAllConnectionReqs(userName string) ([]string, error) {
 	collection := dbClient.Database(dbName).Collection("users")
+
+	//getting user's info
 	filter := bson.M{"username": userName}
 	var userObj models.User
 	userData := collection.FindOne(context.Background(), filter)
@@ -156,40 +174,77 @@ func GetAllConnectionReqs(userName string) ([]string, error) {
 	if err != nil {
 		return []string{}, err
 	}
-	return userObj.ConnectionReq, nil
+
+	//getting user's connection reqs names based on there ids in userObj.ConnectionReq
+	var connReqs []string
+	filter = bson.M{"_id": bson.M{"$in": userObj.ConnectionReq}}
+	cursor, err := collection.Find(context.Background(), filter)
+	if err != nil {
+		return []string{}, err
+	}
+	defer cursor.Close(context.Background())
+
+	//iterate through cursor
+	for cursor.Next(context.Background()) {
+		var connReqUser models.User
+		err := cursor.Decode(&connReqUser)
+		if err != nil {
+			return []string{}, err
+		}
+		connReqs = append(connReqs, connReqUser.UserName)
+	}
+	return connReqs, nil
 }
 
 func ConnectionStatus(sender string, reciever string) (string, error) {
 	collection := dbClient.Database(dbName).Collection("users")
+
+	//getting sender info
+	var senderObj models.User
+	senderData := collection.FindOne(context.Background(), bson.M{"username": sender})
+	err := senderData.Decode(&senderObj)
+	if err != nil {
+		return "", err
+	}
+
+	//getting sender info
+	var recieverObj models.User
+	recieverData := collection.FindOne(context.Background(), bson.M{"username": reciever})
+	err = recieverData.Decode(&recieverObj)
+	if err != nil {
+		return "", err
+	}
+
 	//check if alreadyConnected
-	var connObj bson.M
-	connFilter := bson.M{"username": reciever, "connections": bson.M{"$in": []string{sender}}}
-	connData := collection.FindOne(context.Background(), connFilter)
-	err := connData.Decode(&connObj)
-	if err == nil {
+	if utils.StringIncludes(senderObj.Connections, recieverObj.Id) &&
+		utils.StringIncludes(recieverObj.Connections, senderObj.Id) {
 		return "CONNECTED", nil
-	} else if err.Error() != mongo.ErrNoDocuments.Error() {
-		return "", err
 	}
+
 	//check if connnection request exists
-	var existObj bson.M
-	existFilter := bson.M{"username": reciever, "connReqs": bson.M{"$in": []string{sender}}}
-	existData := collection.FindOne(context.Background(), existFilter)
-	err = existData.Decode(&existObj)
-	if err == nil {
+	if utils.StringIncludes(senderObj.ConnectionReq, recieverObj.Id) ||
+		utils.StringIncludes(recieverObj.ConnectionReq, senderObj.Id) {
 		return "CONNECTION_REQUESTED", nil
-	} else if err.Error() != mongo.ErrNoDocuments.Error() {
-		return "", err
 	}
+
 	//if not any of the above
 	return "NOT_CONNECTED", nil
 }
 
 func RejectConnectionReqs(reciever string, sender string) error {
 	collection := dbClient.Database(dbName).Collection("users")
+
+	//getting sender info
+	var senderObj models.User
+	senderData := collection.FindOne(context.Background(), bson.M{"username": sender})
+	err := senderData.Decode(&senderObj)
+	if err != nil {
+		return err
+	}
+
 	filter := bson.M{"username": reciever}
-	update := bson.M{"$pull": bson.M{"connReqs": sender}}
-	_, err := collection.UpdateOne(context.Background(), filter, update)
+	update := bson.M{"$pull": bson.M{"connReqs": senderObj.Id}}
+	_, err = collection.UpdateOne(context.Background(), filter, update)
 	if err != nil {
 		return err
 	}
@@ -198,26 +253,50 @@ func RejectConnectionReqs(reciever string, sender string) error {
 
 func AddUserConnections(reciever string, sender string) error {
 	collection := dbClient.Database(dbName).Collection("users")
-	filterConnReq := bson.M{"username": reciever}
-	updateConnReq := bson.M{"$pull": bson.M{"connReqs": sender}}
-	_, err := collection.UpdateOne(context.Background(), filterConnReq, updateConnReq)
+
+	//getting sender info
+	var senderObj models.User
+	senderData := collection.FindOne(context.Background(), bson.M{"username": sender})
+	err := senderData.Decode(&senderObj)
 	if err != nil {
 		return err
 	}
-	filterConnReq = bson.M{"username": sender}
-	updateConnReq = bson.M{"$pull": bson.M{"connReqs": reciever}}
+
+	//getting sender info
+	var recieverObj models.User
+	recieverData := collection.FindOne(context.Background(), bson.M{"username": reciever})
+	err = recieverData.Decode(&recieverObj)
+	if err != nil {
+		return err
+	}
+
+	//removing connection reques in reciever's info
+	filterConnReq := bson.M{"username": reciever}
+	updateConnReq := bson.M{"$pull": bson.M{"connReqs": senderObj.Id}}
 	_, err = collection.UpdateOne(context.Background(), filterConnReq, updateConnReq)
 	if err != nil {
 		return err
 	}
+
+	//removing connection reques in sender's info
+	filterConnReq = bson.M{"username": sender}
+	updateConnReq = bson.M{"$pull": bson.M{"connReqs": recieverObj.Id}}
+	_, err = collection.UpdateOne(context.Background(), filterConnReq, updateConnReq)
+	if err != nil {
+		return err
+	}
+
+	//update connection in reciever's info
 	filter1 := bson.M{"username": reciever}
-	update1 := bson.M{"$push": bson.M{"connections": sender}}
+	update1 := bson.M{"$push": bson.M{"connections": senderObj.Id}}
 	_, err = collection.UpdateOne(context.Background(), filter1, update1)
 	if err != nil {
 		return err
 	}
+
+	//update connection in senders info
 	filter2 := bson.M{"username": sender}
-	update2 := bson.M{"$push": bson.M{"connections": reciever}}
+	update2 := bson.M{"$push": bson.M{"connections": recieverObj.Id}}
 	_, err = collection.UpdateOne(context.Background(), filter2, update2)
 	if err != nil {
 		return err
@@ -227,14 +306,34 @@ func AddUserConnections(reciever string, sender string) error {
 
 func RemoveUserConnection(reciever string, sender string) error {
 	collection := dbClient.Database(dbName).Collection("users")
-	filter1 := bson.M{"username": reciever}
-	update1 := bson.M{"$pull": bson.M{"connections": sender}}
-	_, err := collection.UpdateOne(context.Background(), filter1, update1)
+
+	//getting sender info
+	var senderObj models.User
+	senderData := collection.FindOne(context.Background(), bson.M{"username": sender})
+	err := senderData.Decode(&senderObj)
 	if err != nil {
 		return err
 	}
+
+	//getting sender info
+	var recieverObj models.User
+	recieverData := collection.FindOne(context.Background(), bson.M{"username": reciever})
+	err = recieverData.Decode(&recieverObj)
+	if err != nil {
+		return err
+	}
+
+	//remove sender from reciever conn
+	filter1 := bson.M{"username": reciever}
+	update1 := bson.M{"$pull": bson.M{"connections": senderObj.Id}}
+	_, err = collection.UpdateOne(context.Background(), filter1, update1)
+	if err != nil {
+		return err
+	}
+
+	//remove reciever from sender conn
 	filter2 := bson.M{"username": sender}
-	update2 := bson.M{"$pull": bson.M{"connections": reciever}}
+	update2 := bson.M{"$pull": bson.M{"connections": recieverObj.Id}}
 	_, err = collection.UpdateOne(context.Background(), filter2, update2)
 	if err != nil {
 		return err
@@ -250,7 +349,26 @@ func GetConnectionsByUser(userName string) ([]string, error) {
 	if err != nil {
 		return []string{}, err
 	}
-	return userObj.Connections, nil
+
+	//getting user's connection names based on there ids in userObj.ConnectionReq
+	var conns []string
+	filter := bson.M{"_id": bson.M{"$in": userObj.Connections}}
+	cursor, err := collection.Find(context.Background(), filter)
+	if err != nil {
+		return []string{}, err
+	}
+	defer cursor.Close(context.Background())
+
+	//iterate through cursor
+	for cursor.Next(context.Background()) {
+		var connUser models.User
+		err := cursor.Decode(&connUser)
+		if err != nil {
+			return []string{}, err
+		}
+		conns = append(conns, connUser.UserName)
+	}
+	return conns, nil
 }
 
 func GetUserInfo(userName string) (models.UserMetaResp, error) {
@@ -261,6 +379,29 @@ func GetUserInfo(userName string) (models.UserMetaResp, error) {
 	if err != nil {
 		return models.UserMetaResp{}, err
 	}
+
+	//getting user's connection names based on there ids in userObj.ConnectionReq
+	var conns []string
+	filter := bson.M{"_id": bson.M{"$in": userObj.Connections}}
+	cursor, err := collection.Find(context.Background(), filter)
+	if err != nil {
+		return models.UserMetaResp{}, err
+	}
+	defer cursor.Close(context.Background())
+
+	//iterate through cursor
+	for cursor.Next(context.Background()) {
+		var connUser models.User
+		err := cursor.Decode(&connUser)
+		if err != nil {
+			return models.UserMetaResp{}, err
+		}
+		conns = append(conns, connUser.UserName)
+	}
+
+	//updating userObj
+	userObj.Connections = conns
+
 	return userObj, nil
 }
 
@@ -273,4 +414,66 @@ func UpdateUserPasword(email string, newPass string) error {
 		return err
 	}
 	return nil
+}
+
+func UpdateUserDetails(req models.EditUserReq) (string, error) {
+	collection := dbClient.Database(dbName).Collection("users")
+	filter := bson.M{"username": req.UserName}
+
+	//check if password correct
+	isValidPass, err := ValidateUser(req.UserName, req.CurrPassword)
+	if err != nil {
+		return "", err
+	} else if !isValidPass {
+		return "INVALID_PASSWORD", nil
+	}
+
+	//update email
+	if req.NewEmail != "" {
+		flag, err := UserExistsByEmail(req.NewEmail)
+		if err != nil {
+			return "", err
+		} else if flag {
+			return "EMAIL_ALREADY_IN_USE", nil
+		}
+		update := bson.M{"$set": bson.M{"email": req.NewEmail}}
+		_, err = collection.UpdateOne(context.Background(), filter, update)
+		if err != nil {
+			return "", err
+		}
+	}
+
+	//update fullName
+	if req.NewFullName != "" {
+		update := bson.M{"$set": bson.M{"fullname": req.NewFullName}}
+		_, err := collection.UpdateOne(context.Background(), filter, update)
+		if err != nil {
+			return "", err
+		}
+	}
+
+	//update fullName
+	if req.NewPassword != "" {
+		update := bson.M{"$set": bson.M{"password": req.NewPassword}}
+		_, err := collection.UpdateOne(context.Background(), filter, update)
+		if err != nil {
+			return "", err
+		}
+	}
+
+	//update userName: atlast because of filter
+	if req.NewUserName != "" {
+		flag, err := UserExistsByUsername(req.NewUserName)
+		if err != nil {
+			return "", err
+		} else if flag {
+			return "USERNAME_ALREADY_IN_USE", nil
+		}
+		update := bson.M{"$set": bson.M{"username": req.NewUserName}}
+		_, err = collection.UpdateOne(context.Background(), filter, update)
+		if err != nil {
+			return "", err
+		}
+	}
+	return "UPDATED_SUCCESSFULY", nil
 }

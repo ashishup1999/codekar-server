@@ -77,3 +77,12 @@ func SendOtpOnMail(email string, otp string) error {
 	}
 	return nil
 }
+
+func StringIncludes(arr []string, val string) bool {
+	for _, x := range arr {
+		if x == val {
+			return true
+		}
+	}
+	return false
+}
