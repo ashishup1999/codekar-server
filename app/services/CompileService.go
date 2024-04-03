@@ -162,9 +162,12 @@ func RunCppfn(req models.CompileReq) (string, error) {
 	cmd := exec.Command("g++", tempFile, "-o", "out")
 
 	// Run the command to create executable file
+	cmd.Stderr = &errBuff
+
+	//run cmd
 	err = cmd.Run()
 	if err != nil {
-		return "", err
+		return errBuff.String(), nil
 	}
 
 	//assign cmd command to rrun executable file
