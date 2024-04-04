@@ -34,7 +34,8 @@ func ConnectionReqService(sender string, reciever string) models.StatusResp {
 
 func GetAllConnectionReqsService(userName string) models.AllConnReqsResp {
 	var resp models.AllConnReqsResp
-	connReqs, err := db.GetAllConnectionReqs(userName)
+	connReqs, profileImg, err := db.GetAllConnectionReqs(userName)
+	resp.ProfileImg = profileImg
 	if err != nil {
 		resp.Status = "ERROR"
 		resp.Message = "DB_ERROR"
@@ -152,6 +153,21 @@ func DeleteWbService(wbId string) models.UpdateProjResp {
 
 func UpdateUserDetailsService(req models.EditUserReq) models.StatusResp {
 	msg, err := db.UpdateUserDetails(req)
+	if err != nil {
+		resp := models.StatusResp{
+			Status:  "ERROR",
+			Message: "DB_ERROR",
+		}
+		return resp
+	}
+	return models.StatusResp{
+		Status:  "SUCCESS",
+		Message: msg,
+	}
+}
+
+func UpdateProfilePictureService(userName string, base64_str string) models.StatusResp {
+	msg, err := db.UpdateProfilePicture(userName, base64_str)
 	if err != nil {
 		resp := models.StatusResp{
 			Status:  "ERROR",

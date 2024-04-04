@@ -57,4 +57,7 @@ func SetUphandler(r *gin.Engine) {
 	r.POST("/removeConnection", RemoveConnectionHandler)
 	r.GET("/connectionByUser/:userName", GetConnectionsByUserHandler)
 	r.GET("/userInfo/:userName", GetUserInfoHandler)
+
+	//file handlers
+	r.POST("/uploadProfileImg",UploadProfileImgHandler)
 }

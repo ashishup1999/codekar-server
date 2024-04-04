@@ -4,6 +4,7 @@ import (
 	"codekar/app/models"
 	"codekar/app/utils"
 	"context"
+	"fmt"
 
 	"github.com/google/uuid"
 	"go.mongodb.org/mongo-driver/bson"
@@ -165,7 +166,7 @@ func ConnectionReqs(sender string, reciever string) error {
 	return nil
 }
 
-func GetAllConnectionReqs(userName string) ([]string, error) {
+func GetAllConnectionReqs(userName string) ([]string, string, error) {
 	collection := dbClient.Database(dbName).Collection("users")
 
 	//getting user's info
@@ -174,7 +175,7 @@ func GetAllConnectionReqs(userName string) ([]string, error) {
 	userData := collection.FindOne(context.Background(), filter)
 	err := userData.Decode(&userObj)
 	if err != nil {
-		return []string{}, err
+		return []string{}, "", err
 	}
 
 	//getting user's connection reqs names based on there ids in userObj.ConnectionReq
@@ -182,7 +183,7 @@ func GetAllConnectionReqs(userName string) ([]string, error) {
 	filter = bson.M{"_id": bson.M{"$in": userObj.ConnectionReq}}
 	cursor, err := collection.Find(context.Background(), filter)
 	if err != nil {
-		return []string{}, err
+		return []string{}, userObj.ProfileImg, err
 	}
 	defer cursor.Close(context.Background())
 
@@ -191,11 +192,11 @@ func GetAllConnectionReqs(userName string) ([]string, error) {
 		var connReqUser models.User
 		err := cursor.Decode(&connReqUser)
 		if err != nil {
-			return []string{}, err
+			return []string{}, userObj.ProfileImg, err
 		}
 		connReqs = append(connReqs, connReqUser.UserName)
 	}
-	return connReqs, nil
+	return connReqs, userObj.ProfileImg, nil
 }
 
 func ConnectionStatus(sender string, reciever string) (string, error) {
@@ -478,4 +479,18 @@ func UpdateUserDetails(req models.EditUserReq) (string, error) {
 		}
 	}
 	return "UPDATED_SUCCESSFULY", nil
+}
+
+func UpdateProfilePicture(userName string, base64_str string) (string, error) {
+	fmt.Println(userName)
+	collection := dbClient.Database(dbName).Collection("users")
+	filter := bson.M{"username": userName}
+	updateOptions := options.Update().SetUpsert(true)
+	update := bson.M{"$set": bson.M{"profileImg": base64_str}}
+	_, err := collection.UpdateOne(context.Background(), filter, update, updateOptions)
+	if err != nil {
+		return "", err
+	}
+
+	return "PROFILE_IMG_UPDATED", nil
 }

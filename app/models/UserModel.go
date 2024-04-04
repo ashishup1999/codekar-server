@@ -8,6 +8,7 @@ type User struct {
 	Password      string   `bson:"password"`
 	Connections   []string `bson:"connections"`
 	ConnectionReq []string `bson:"connReqs"`
+	ProfileImg    string   `bson:"profileImg"`
 	CreatedAt     string   `bson:"createdat"`
 	UpdatedAt     string   `bson:"updatedat"`
 }
@@ -37,6 +38,7 @@ type AuthenticateUserResp struct {
 type UserMata struct {
 	UserId   string `json:"userId" bson:"_id,omitempty"`
 	UserName string `json:"userName" bson:"username"`
+	ProfileImg  string   `bson:"profileImg" json:"profileImg"`
 }
 
 type UserMetaResp struct {
@@ -44,6 +46,7 @@ type UserMetaResp struct {
 	Message     string   `json:"message"`
 	UserName    string   `json:"userName" bson:"username"`
 	FullName    string   `json:"fullName" bson:"fullname"`
+	ProfileImg  string   `bson:"profileImg" json:"profileImg"`
 	Connections []string `json:"connections" bson:"connections"`
 }
 
@@ -72,6 +75,7 @@ type ConnectionsResponse struct {
 type AllConnReqsResp struct {
 	Status        string   `json:"status"`
 	Message       string   `json:"message"`
+	ProfileImg    string   `json:"profileImg"`
 	ConnectionReq []string `json:"connectionReqs"`
 }
 
