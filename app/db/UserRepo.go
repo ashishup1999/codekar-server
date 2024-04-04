@@ -68,6 +68,8 @@ func UserExistsByEmail(email string) (bool, error) {
 func CreateUser(userObj models.User) error {
 	collection := dbClient.Database(dbName).Collection("users")
 	userObj.Id = uuid.New().String()
+	userObj.ConnectionReq = []string{}
+	userObj.Connections = []string{}
 	bsonData, err := bson.Marshal(userObj)
 	if err != nil {
 		return err
