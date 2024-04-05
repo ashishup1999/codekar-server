@@ -4,7 +4,6 @@ import (
 	"codekar/app/models"
 	"codekar/app/utils"
 	"context"
-	"fmt"
 
 	"github.com/google/uuid"
 	"go.mongodb.org/mongo-driver/bson"
@@ -485,7 +484,6 @@ func UpdateUserDetails(req models.EditUserReq) (string, error) {
 }
 
 func UpdateProfilePicture(userName string, base64_str string) (string, error) {
-	fmt.Println(userName)
 	collection := dbClient.Database(dbName).Collection("users")
 	filter := bson.M{"username": userName}
 	updateOptions := options.Update().SetUpsert(true)
