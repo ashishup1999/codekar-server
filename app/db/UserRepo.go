@@ -166,7 +166,7 @@ func ConnectionReqs(sender string, reciever string) error {
 	return nil
 }
 
-func GetAllConnectionReqs(userName string) ([]string, string, error) {
+func GetAllConnectionReqs(userName string) ([]models.UserMata, string, error) {
 	collection := dbClient.Database(dbName).Collection("users")
 
 	//getting user's info
@@ -175,26 +175,26 @@ func GetAllConnectionReqs(userName string) ([]string, string, error) {
 	userData := collection.FindOne(context.Background(), filter)
 	err := userData.Decode(&userObj)
 	if err != nil {
-		return []string{}, "", err
+		return []models.UserMata{}, "", err
 	}
 
 	//getting user's connection reqs names based on there ids in userObj.ConnectionReq
-	var connReqs []string
+	var connReqs []models.UserMata
 	filter = bson.M{"_id": bson.M{"$in": userObj.ConnectionReq}}
 	cursor, err := collection.Find(context.Background(), filter)
 	if err != nil {
-		return []string{}, userObj.ProfileImg, err
+		return []models.UserMata{}, userObj.ProfileImg, err
 	}
 	defer cursor.Close(context.Background())
 
 	//iterate through cursor
 	for cursor.Next(context.Background()) {
-		var connReqUser models.User
+		var connReqUser models.UserMata
 		err := cursor.Decode(&connReqUser)
 		if err != nil {
-			return []string{}, userObj.ProfileImg, err
+			return []models.UserMata{}, userObj.ProfileImg, err
 		}
-		connReqs = append(connReqs, connReqUser.UserName)
+		connReqs = append(connReqs, connReqUser)
 	}
 	return connReqs, userObj.ProfileImg, nil
 }
@@ -375,7 +375,7 @@ func GetConnectionsByUser(userName string) ([]string, error) {
 }
 
 func GetUserInfo(userName string) (models.UserMetaResp, error) {
-	var userObj models.UserMetaResp
+	var userObj models.User
 	collection := dbClient.Database(dbName).Collection("users")
 	bsonData := collection.FindOne(context.Background(), bson.M{"username": userName})
 	err := bsonData.Decode(&userObj)
@@ -384,7 +384,7 @@ func GetUserInfo(userName string) (models.UserMetaResp, error) {
 	}
 
 	//getting user's connection names based on there ids in userObj.ConnectionReq
-	var conns []string
+	var conns []models.UserMata
 	filter := bson.M{"_id": bson.M{"$in": userObj.Connections}}
 	cursor, err := collection.Find(context.Background(), filter)
 	if err != nil {
@@ -394,18 +394,22 @@ func GetUserInfo(userName string) (models.UserMetaResp, error) {
 
 	//iterate through cursor
 	for cursor.Next(context.Background()) {
-		var connUser models.User
+		var connUser models.UserMata
 		err := cursor.Decode(&connUser)
 		if err != nil {
 			return models.UserMetaResp{}, err
 		}
-		conns = append(conns, connUser.UserName)
+		conns = append(conns, connUser)
 	}
 
 	//updating userObj
-	userObj.Connections = conns
+	var userInfo models.UserMetaResp
+	userInfo.UserName = userObj.UserName
+	userInfo.FullName = userObj.FullName
+	userInfo.ProfileImg = userObj.ProfileImg
+	userInfo.Connections = conns
 
-	return userObj, nil
+	return userInfo, nil
 }
 
 func UpdateUserPasword(email string, newPass string) error {

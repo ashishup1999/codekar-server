@@ -43,7 +43,7 @@ func GetAllConnectionReqsService(userName string) models.AllConnReqsResp {
 	}
 	resp.Status = "SUCCESS"
 	resp.Message = "REQUESTS_FETCHED"
-	resp.ConnectionReq = connReqs
+	resp.ConnectionReqs = connReqs
 	return resp
 }
 

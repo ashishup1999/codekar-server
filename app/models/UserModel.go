@@ -36,18 +36,17 @@ type AuthenticateUserResp struct {
 }
 
 type UserMata struct {
-	UserId   string `json:"userId" bson:"_id,omitempty"`
-	UserName string `json:"userName" bson:"username"`
-	ProfileImg  string   `bson:"profileImg" json:"profileImg"`
+	UserName   string `json:"userName" bson:"username"`
+	ProfileImg string `bson:"profileImg" json:"profileImg"`
 }
 
 type UserMetaResp struct {
-	Status      string   `json:"status"`
-	Message     string   `json:"message"`
-	UserName    string   `json:"userName" bson:"username"`
-	FullName    string   `json:"fullName" bson:"fullname"`
-	ProfileImg  string   `bson:"profileImg" json:"profileImg"`
-	Connections []string `json:"connections" bson:"connections"`
+	Status      string     `json:"status"`
+	Message     string     `json:"message"`
+	UserName    string     `json:"userName" bson:"username"`
+	FullName    string     `json:"fullName" bson:"fullname"`
+	ProfileImg  string     `bson:"profileImg" json:"profileImg"`
+	Connections []UserMata `json:"connections"`
 }
 
 type ProfilesResp struct {
@@ -73,10 +72,10 @@ type ConnectionsResponse struct {
 }
 
 type AllConnReqsResp struct {
-	Status        string   `json:"status"`
-	Message       string   `json:"message"`
-	ProfileImg    string   `json:"profileImg"`
-	ConnectionReq []string `json:"connectionReqs"`
+	Status         string     `json:"status"`
+	Message        string     `json:"message"`
+	ProfileImg     string     `json:"profileImg"`
+	ConnectionReqs []UserMata `json:"connectionReqs"`
 }
 
 type PasswordUpdateReq struct {
