@@ -20,7 +20,7 @@ const (
 
 func CompileCode(c *gin.Context) {
 	//timeout creation and task channel creation
-	timeout := time.After(10 * time.Second)
+	timeout := time.After(20 * time.Second)
 	taskExecuted := make(chan string)
 
 	// Simulate a long-running task
