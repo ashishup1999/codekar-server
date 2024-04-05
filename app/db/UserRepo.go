@@ -225,8 +225,7 @@ func ConnectionStatus(sender string, reciever string) (string, error) {
 	}
 
 	//check if connnection request exists
-	if utils.StringIncludes(senderObj.ConnectionReq, recieverObj.Id) ||
-		utils.StringIncludes(recieverObj.ConnectionReq, senderObj.Id) {
+	if utils.StringIncludes(recieverObj.ConnectionReq, senderObj.Id) {
 		return "CONNECTION_REQUESTED", nil
 	}
 
